@@ -610,9 +610,10 @@ window.SITE = {
   hobbies: ['Sim racing on a wheel, pedals and shifter rig', 'Mechanical watches', 'Skiing', 'Backpacking: Italy, Spain and Portugal in 2025'],
 
   contact: {
-    email: '',
-    linkedin: '',
-    github: '',
+    email: 'lucaspcdemacedo@gmail.com',
+    phone: '+1 (678) 234-7751',
+    linkedin: 'https://www.linkedin.com/in/lucaspcdemacedo',
+    github: 'https://github.com/lucasdemacedo1',
   },
 };
 
@@ -860,6 +861,7 @@ window.SITE = {
 
   var C = S.contact, links = [];
   if (C.email) links.push('<a href="mailto:' + esc(C.email) + '">' + esc(C.email) + '</a>');
+  if (C.phone) links.push('<a href="tel:' + esc(C.phone.replace(/[^+\d]/g, '')) + '">' + esc(C.phone) + '</a>');
   if (C.linkedin) links.push('<a href="' + esc(C.linkedin) + '">LinkedIn</a>');
   if (C.github) links.push('<a href="' + esc(C.github) + '">GitHub</a>');
   $('links').innerHTML = links.length ? links.join('') : '<span class="soon">Contact links are coming soon.</span>';
