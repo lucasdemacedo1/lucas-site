@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1100M Crib Quest</title>
+<meta name="description" content="A pixel-art shop game that teaches the Tormach 1100M: pick the bit for each metal, hold the part, work out speeds and feeds, and handle what goes wrong mid-cut.">
+<meta name="theme-color" content="#10131f">
+<meta property="og:title" content="1100M Crib Quest">
+<meta property="og:description" content="A pixel-art shop game for learning the Tormach 1100M CNC mill.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://lucasdemacedo.com/TormachQuest/">
+<meta property="og:image" content="https://lucasdemacedo.com/TormachQuest/preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+/* Layout: an arcade cabinet. Pixel screen on top, RPG dialog and inventory tray underneath. One committed dark look. */
+:root{
+  --bg:#10131f; --panel:#1a1e30; --tray:#232842; --ink:#eef0f7; --muted:#a3abc9; --line:#3b4266; --hi:#525b8a; --shade:#080a12;
+  --accent:#f4c542; --accent-deep:#b8892a; --accent-ink:#1a1405; --good:#5fd07a; --bad:#ff6b5e; --cyan:#62d6e8;
+  --f-display:"Press Start 2P",ui-monospace,"Courier New",monospace;
+  --f-body:"VT323",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+body{background:var(--bg);color:var(--ink);font:22px/1.15 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px;
+  background-image:radial-gradient(var(--panel) 1px,transparent 1px);background-size:6px 6px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.cab{max-width:960px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap}
+.logo{font:18px/1 var(--f-display);color:var(--accent);text-shadow:3px 3px 0 var(--shade);letter-spacing:.04em;margin:0}
+.logo small{display:block;font:9px/1.5 var(--f-display);color:var(--muted);text-shadow:none;margin-top:8px;letter-spacing:.06em}
+.hbtns{display:flex;gap:8px;flex-wrap:wrap}
+.screen{border:4px solid var(--shade);box-shadow:0 0 0 4px var(--line),0 10px 0 4px var(--shade);background:var(--shade);margin:4px 4px 10px}
+#scr{display:block;width:100%;height:auto;aspect-ratio:16/9;image-rendering:pixelated;image-rendering:crisp-edges;cursor:default}
+#scr.clicky{cursor:pointer}
+.box{background:var(--panel);border:3px solid var(--shade);box-shadow:inset 3px 3px 0 var(--hi),inset -3px -3px 0 var(--line);padding:14px 16px;display:grid;gap:12px;min-width:0}
+#panel{display:grid;gap:12px;min-width:0}
+.crumb{font:9px/1.5 var(--f-display);color:var(--muted);letter-spacing:.06em;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.crumb b{color:var(--accent);font-weight:400}
+.dlg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:14px;align-items:start;cursor:pointer}
+.dlg canvas{width:72px;height:72px;image-rendering:pixelated;background:var(--tray);border:3px solid var(--shade)}
+.who{font:10px/1 var(--f-display);color:var(--accent);margin:2px 0 8px;letter-spacing:.06em}
+.say{font-size:25px;line-height:1.12;text-wrap:pretty;min-height:2.2em}
+.say .caret{display:inline-block;width:.5em;height:.9em;background:var(--accent);vertical-align:-2px;margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (min-width:760px){.opts.four{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.opt{position:relative;display:grid;grid-template-rows:auto 1fr;justify-items:center;gap:6px;text-align:center;background:var(--tray);border:3px solid var(--shade);
+  box-shadow:inset 3px 3px 0 var(--hi),inset -3px -3px 0 var(--line);padding:10px 8px 12px;cursor:pointer;font:21px/1.02 var(--f-body);min-height:72px;min-width:0;transition:transform .08s}
+.opt.noimg{grid-template-rows:1fr;align-items:center;text-align:left;justify-items:start;padding:12px 30px 12px 12px;font-size:20px}
+.opt canvas{width:60px;height:60px;image-rendering:pixelated}
+.opt .lbl{min-width:0;overflow-wrap:anywhere}
+.opt .k{position:absolute;top:5px;right:6px;font:8px/1 var(--f-display);color:var(--muted)}
+.opt:hover:not(:disabled){transform:translateY(-2px);box-shadow:inset 3px 3px 0 var(--accent),inset -3px -3px 0 var(--line)}
+.opt:active:not(:disabled){transform:translateY(1px)}
+.opt:disabled{cursor:default}
+.opt.right{background:color-mix(in srgb,var(--good) 26%,var(--tray));box-shadow:inset 3px 3px 0 var(--good),inset -3px -3px 0 var(--good)}
+.opt.wrong{background:color-mix(in srgb,var(--bad) 26%,var(--tray));box-shadow:inset 3px 3px 0 var(--bad),inset -3px -3px 0 var(--bad);animation:shake .3s}
+.opt.dim{opacity:.4}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.fb{border-left:6px solid var(--good);padding:4px 0 4px 14px;display:grid;gap:6px}
+.fb.miss{border-color:var(--bad)}
+.fb h3{font:11px/1.5 var(--f-display);margin:0;color:var(--good);letter-spacing:.04em}
+.fb.miss h3{color:var(--bad)}
+.fb p{margin:0;max-width:68ch}
+.acts{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.pbtn{font:11px/1.2 var(--f-display);letter-spacing:.04em;background:var(--accent);color:var(--accent-ink);border:3px solid var(--shade);box-shadow:inset -3px -3px 0 var(--accent-deep);padding:13px 16px;cursor:pointer}
+.pbtn:hover{filter:brightness(1.08)}
+.pbtn:active{box-shadow:inset 3px 3px 0 var(--accent-deep)}
+.sbtn{font:10px/1.2 var(--f-display);letter-spacing:.04em;background:var(--tray);color:var(--ink);border:3px solid var(--shade);box-shadow:inset 3px 3px 0 var(--hi),inset -3px -3px 0 var(--line);padding:11px 13px;cursor:pointer}
+.sbtn:hover{box-shadow:inset 3px 3px 0 var(--accent),inset -3px -3px 0 var(--line)}
+.sbtn[aria-pressed="true"]{background:var(--hi)}
+.h2{font:13px/1.4 var(--f-display);color:var(--accent);margin:0;letter-spacing:.04em}
+.muted{color:var(--muted)}
+p{margin:0}
+.levels{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.lvl{display:grid;grid-template-columns:52px minmax(0,1fr);gap:4px 12px;align-items:center;text-align:left;background:var(--tray);border:3px solid var(--shade);
+  box-shadow:inset 3px 3px 0 var(--hi),inset -3px -3px 0 var(--line);padding:10px;cursor:pointer;min-width:0}
+.lvl:hover,.lvl.sel{box-shadow:inset 3px 3px 0 var(--accent),inset -3px -3px 0 var(--line)}
+.lvl canvas{width:48px;height:48px;image-rendering:pixelated;grid-row:span 3}
+.lvl .nm{font:10px/1.4 var(--f-display);color:var(--ink);letter-spacing:.03em}
+.lvl .sub{font-size:19px;line-height:1.05;color:var(--muted)}
+.stars{display:flex;gap:4px}
+.star{width:14px;height:14px;background:var(--line);clip-path:polygon(50% 0,63% 35%,100% 38%,71% 60%,80% 100%,50% 78%,20% 100%,29% 60%,0 38%,37% 35%)}
+.star.on{background:var(--accent)}
+.bigstars{display:flex;gap:10px}.bigstars .star{width:40px;height:40px}
+.stat{display:flex;gap:22px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.stat div{display:grid}
+.stat b{font:20px/1.2 var(--f-display);color:var(--ink);font-weight:400}
+.stat span{font:8px/1.6 var(--f-display);color:var(--muted);letter-spacing:.06em}
+.missed{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.missed li{border-bottom:2px dashed var(--line);padding-bottom:10px;display:grid;gap:2px}
+.missed .q{color:var(--muted);font-size:19px}
+.missed b{color:var(--good);font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:8px/1.3 var(--f-display);background:var(--tray);border:3px solid var(--shade);padding:8px 9px;cursor:pointer;letter-spacing:.03em}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.book{display:grid;gap:0}
+.brow{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:center;padding:8px 0;border-bottom:2px dashed var(--line)}
+.brow canvas{width:40px;height:40px;image-rendering:pixelated;background:var(--tray);border:2px solid var(--shade)}
+.brow .t{font:9px/1.5 var(--f-display);letter-spacing:.03em}
+.brow .d{font-size:20px;line-height:1.08}
+.brow.locked canvas{filter:brightness(.25) saturate(0)}
+.brow.locked .t{color:var(--muted)}
+.brow.locked .d{color:var(--muted)}
+.cat{font:10px/1 var(--f-display);color:var(--accent);margin:16px 0 4px;display:flex;justify-content:space-between}
+.cat small{color:var(--muted);font-size:8px}
+.keys{font-size:18px;color:var(--muted)}
+.toggle{display:inline-flex;gap:8px;align-items:center;font-size:20px;color:var(--muted);cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.formula{font:9px/1.8 var(--f-display);color:var(--cyan);background:var(--shade);padding:8px 10px;letter-spacing:.03em;overflow-x:auto}
+@media (max-width:560px){
+  body{font-size:21px}
+  .say{font-size:23px}
+  .opt{font-size:19px}
+  .opt canvas{width:48px;height:48px}
+  .dlg{grid-template-columns:54px minmax(0,1fr);gap:10px}
+  .dlg canvas{width:54px;height:54px}
+  .logo{font-size:14px}
+}
+.foot{font-size:19px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between;border-top:2px dashed var(--line);padding-top:12px}
+.foot a{color:var(--cyan)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="cab">
+  <header class="top">
+    <h1 class="logo">CRIB QUEST<small id="tagline">TORMACH 1100M · SHOP TRAINING</small></h1>
+    <div class="hbtns">
+      <button class="sbtn" id="b-home" type="button">◀ RACKS</button>
+      <button class="sbtn" id="b-snd" type="button" aria-pressed="true">SOUND ON</button>
+    </div>
+  </header>
+  <div class="screen"><canvas id="scr" width="320" height="180" role="img" aria-label="Pixel-art machine shop scene"></canvas></div>
+  <main id="panel" aria-live="polite"></main>
+  <footer class="foot"><span>Open source under the MIT license · <a href="https://github.com/lucasdemacedo1/tormach-quest" target="_blank" rel="noopener">Source on GitHub</a></span><span>Unofficial study game. Not affiliated with or endorsed by Tormach.</span></footer>
+</div>
+
+<script>
+/* ============ SHOP SETTINGS: change these for your own lab ============
+   name   : shown in the header, on the title screen and on the mill (keep it 6 characters or fewer)
+   manual : where people should check shop-specific rules
+   Progress is saved in the player's browser only (localStorage, keys start with "cq:"). */
+const SHOP={
+  name:"SSRL",
+  manual:"the SSRL safety manual"
+};
+
+/* ============ CONTENT: glossary terms and pick-the-tool jobs ============ */
+const CATS={mach:"Machine & options",hold:"Tool holding",tool:"Cutting tools",work:"Work holding",meas:"Measuring",ops:"Operation",mat:"Materials"};
+const RAW=[
+["mach","3-axis mill","Moves the tool relative to the part in X, Y and Z only. No rotation, so each new face of a part needs a new setup."],
+["mach","Spindle","The rotating shaft that holds and spins the tool. On the 1100M: 2 hp, up to 7,500 RPM."],
+["mach","R8 taper","The taper inside the spindle. On our Tormach it holds the TTS collet."],
+["mach","Drawbar","Rod through the spindle that pulls the collet up to clamp the tool holder."],
+["mach","Power drawbar","Button-operated drawbar: press to release a tool holder, let go to clamp. We have one."],
+["mach","ATC (automatic tool changer)","Carousel that swaps tools by itself. We don't have one, so every tool change is done by hand."],
+["mach","4th / 5th axis","Rotary axes that tilt or turn the part during cutting. We don't have either."],
+["mach","Enclosure","The box and doors around the mill that keep chips and coolant in. We have one."],
+["mach","Flood coolant","Pumped liquid that cools the cut and washes chips away. We have it."],
+["mach","PathPilot","Tormach's control software. Loads G-code, stores offsets, runs probing routines."],
+["mach","Ways","Precision sliding surfaces the table and head ride on. Keep them oiled and chip-free."],
+["mach","Ballscrew","Screw with recirculating balls that turns motor rotation into precise axis motion."],
+["mach","T-slot table","Machine table with inverted-T grooves for bolting down vises and clamps."],
+["mach","Travel","How far each axis can move. 1100M: 18 × 11 × 16.25 in (X × Y × Z)."],
+["mach","Jog","Moving an axis by hand, with keys or the jog shuttle, in set step sizes."],
+["mach","E-stop","The big red button. Cuts power to all motion and the spindle immediately."],
+["mach","Spindle nose","The bottom face of the spindle. TTS holders seat against it."],
+["hold","TTS (Tormach Tooling System)","Quick-change system: every tool lives in a 3/4″-shank holder that seats on the spindle nose, so each tool's length repeats every time it goes in."],
+["hold","TTS R8 collet","A shortened 3/4″ R8 collet that stays in the spindle and grips the TTS holder shanks."],
+["hold","Tool holder","The piece that grips a cutting tool and mounts it in the spindle."],
+["hold","ER collet","Slotted, springy sleeve that squeezes a round shank when its nut is tightened. Low runout; each one grips a small size range."],
+["hold","ER collet chuck","Holder with a threaded nose and nut that takes ER collets (ER20 is most common on the Tormach)."],
+["hold","Set-screw holder","Holder with a bore and a screw that clamps on the tool's flat. The tool can't pull out, but runout is higher."],
+["hold","Weldon flat","Flat ground on a tool shank for a set screw to bear on."],
+["hold","Drill chuck","Adjustable three-jaw chuck for drills. Takes side load badly, so never mill with it."],
+["hold","Jacobs taper","Short taper that mounts a drill chuck onto its arbor."],
+["hold","Shell mill arbor","Holder that mounts a face or shell mill with a bolt through its center."],
+["hold","Indexable insert","Replaceable carbide cutting edge screwed into a tool body. Rotate it to a fresh edge when it dulls."],
+["hold","Runout","How far off-center a tool spins. Causes uneven flute load, bad finish and short tool life."],
+["hold","Stickout","How far the tool sticks out of the holder. Deflection grows with its cube, so keep it short."],
+["hold","Tool table","PathPilot's list of every tool number with its length and diameter."],
+["hold","Tool length offset","The stored length of a tool, so the control knows where its tip is."],
+["hold","Height gauge","Instrument used on a surface plate to measure TTS tool lengths away from the machine."],
+["hold","Tool setter (ETS)","A switch on the table that records Z when a tool touches it, to set tool length."],
+["tool","Flat (square) end mill","End mill with sharp square corners. Pockets, profiles, slots and flat floors."],
+["tool","Bullnose end mill","End mill with a small corner radius. Stronger corners; leaves a small fillet at the floor."],
+["tool","Ball end mill","Fully rounded tip. For 3D contoured surfaces."],
+["tool","Chamfer mill","Angled cutter for chamfers, deburring edges and spotting holes."],
+["tool","Engraving tool","Fine V-pointed cutter for text and thin lines."],
+["tool","Thread mill","Cutter that makes a thread by spiraling around the hole. How we thread, since we can't power tap."],
+["tool","Fly cutter","Single cutting bit on a wide swinging arm. Faces large flat areas with a great finish."],
+["tool","Face mill","Large cutter with several inserts, for facing."],
+["tool","Roughing end mill","End mill with serrated (chipbreaker) flutes for removing lots of material quickly."],
+["tool","Spot drill","Short, stiff drill that makes a starting dimple so the real drill doesn't wander."],
+["tool","Center drill","A lathe tool for center holes. Fragile; use a spot drill on the mill instead."],
+["tool","Twist drill","Standard drill. 118° point for general use; 135° split point self-centers."],
+["tool","Tap","Threaded tool that cuts or forms internal threads. We only hand tap here."],
+["tool","Spiral point tap","Pushes chips ahead of it. For through holes."],
+["tool","Spiral flute tap","Pulls chips up and out of the hole. For blind holes."],
+["tool","Form (roll) tap","Pushes metal into a thread shape with no chips. Needs a larger drilled hole."],
+["tool","Reamer","Finishes a drilled hole to an exact size with a smooth wall."],
+["tool","Counterbore","Flat-bottomed step at the top of a hole so a socket head screw sits flush."],
+["tool","Countersink","Cone at the top of a hole so a flat head screw sits flush."],
+["tool","Flute","Spiral groove on a tool; each carries a cutting edge. More flutes: stronger tool, less room for chips."],
+["tool","Helix angle","How twisted the flutes are. High helix clears aluminum chips; low helix suits brass and plastic."],
+["tool","Center cutting","End mill whose edges reach the center, so it can plunge straight down."],
+["tool","HSS (high-speed steel)","Tough, cheap tool material. Runs about a third as fast as carbide."],
+["tool","Carbide","Very hard, stiff tool material. Fast and rigid but brittle; chips on vibration or a crash."],
+["tool","Coating","Thin hard layer (TiN, TiAlN, ZrN) for heat and wear resistance. Avoid TiAlN in aluminum."],
+["tool","Corner radius","The rounded corner at the tip of an end mill."],
+["work","Vise","Clamp bolted to the table that grips the part between two jaws. Our main way to hold parts."],
+["work","Fixed jaw","The jaw that doesn't move. It's the reference you indicate and locate from."],
+["work","Moving jaw","The jaw that slides when you turn the handle. It lifts slightly as it clamps."],
+["work","Parallels","Precision-ground bars that raise the part to a known height in the vise."],
+["work","Hard jaws","Hardened steel vise jaws for general work. Can mark the part."],
+["work","Soft jaws","Aluminum or plastic jaws machined to the part's shape, for odd shapes and second ops."],
+["work","Strap clamp","Bar bolted across a part to hold it on the table when it doesn't fit in a vise."],
+["work","Step block","Stepped block that holds up the back (heel) end of a strap clamp at the right height."],
+["work","T-slot nut","Nut that slides into the table's T-slot for a stud to thread into."],
+["work","Stud","Threaded rod running from the T-slot nut up through the strap clamp."],
+["work","Dead blow hammer","Shot-filled mallet for tapping parts down onto parallels without bouncing."],
+["work","Vise stop","Adjustable stop on the vise so repeat parts load in exactly the same spot."],
+["work","Fixture plate","Plate with tapped holes and dowel holes for locating and bolting down parts."],
+["work","Dowel pin","Precision pin that locates parts repeatably."],
+["work","Sacrificial plate","Throwaway plate under the part so through-cuts don't hit the table or parallels."],
+["work","Indicating the vise","Sweeping the fixed jaw with an indicator and tapping the vise until it's parallel to X."],
+["work","Tabs","Small bridges left to hold a cut-out part to the stock, removed afterward."],
+["work","Setup","One way of holding the part. Every new orientation is a new setup with its own zero."],
+["meas","Caliper","Sliding measuring tool for outsides, insides, depths and steps. Good to about ±0.001″."],
+["meas","Micrometer","Screw-based tool for precise outside measurements, to about ±0.0001″. Close it with the ratchet."],
+["meas","Feeler gauge","Set of thin leaves of known thickness for measuring gaps."],
+["meas","Small hole (ball) gauge","Expands to fit a small hole; you then measure it with a micrometer."],
+["meas","Telescoping gauge","Spring-loaded T that locks at a hole's size; you then measure it with a micrometer."],
+["meas","Dial bore gauge","Reads a bore's size and roundness against a reference you set it to."],
+["meas","Dial test indicator (DTI)","Lever-style indicator for sweeping surfaces: indicating a vise, centering on a bore."],
+["meas","Dial indicator","Plunger-style indicator that measures movement along its own axis."],
+["meas","Surface plate","Flat granite slab used as the reference surface for measuring."],
+["meas","Gauge blocks","Blocks of exact thickness used to set and check measuring instruments."],
+["meas","Edge finder","Spinning probe that kicks sideways when it touches an edge, used to find X/Y zero."],
+["meas","Passive probe","Wired touch probe (tool 99) that sets work offsets with PathPilot routines. Never spin the spindle with it in."],
+["meas","Resolution vs accuracy","Resolution is the smallest step a tool displays; accuracy is how close it is to the true size."],
+["meas","10:1 rule","Use a measuring tool at least 10× finer than the tolerance you're checking."],
+["meas","Cosine error","An indicator reads high when its stylus is tilted relative to the surface."],
+["ops","Referencing (homing)","Driving each axis to its home switch at startup so the machine knows where it is."],
+["ops","Machine coordinates","Positions measured from the home switches. They never change."],
+["ops","Work offset (G54)","Where your part zero is, measured from machine zero."],
+["ops","WCS","Work coordinate system: the part zero you set in Fusion and on the machine. The two must match."],
+["ops","Feed hold","Pauses all motion; the spindle keeps turning. Cycle Start resumes."],
+["ops","Cycle start","Starts or resumes the program."],
+["ops","Stop","Aborts the program and stops the spindle."],
+["ops","Feed override","Slider that scales the programmed feed rate. Changes chipload."],
+["ops","Spindle override","Slider that scales the spindle RPM."],
+["ops","Max velocity override","Caps how fast any move, including rapids, can go. Turn it down for a first run."],
+["ops","Single block","Runs one line of code per press of Cycle Start."],
+["ops","Optional stop (M01)","Pause point in a program that only stops when the optional-stop switch is on."],
+["ops","Air cut","Running a program with Z raised above the part to check the path safely."],
+["ops","G-code","The text instructions the machine runs: G0 rapid, G1 feed, G2/G3 arcs."],
+["ops","M6","Tool change command. Our mill pauses for you to swap the holder."],
+["ops","Toolpath","The route the tool follows, generated in Fusion CAM."],
+["ops","Adaptive clearing","Roughing path with deep cuts and small, constant sideways engagement. Easy on a small machine."],
+["ops","Climb milling","Tool rotation goes with the feed direction. Better finish; the default on CNC."],
+["ops","Conventional milling","Tool rotation works against the feed direction. Used on manual mills with backlash."],
+["ops","Peck drilling","Drilling in steps and retracting to clear chips. For holes deeper than about 3× diameter."],
+["ops","SFM","Surface feet per minute: how fast the cutting edge moves past the material."],
+["ops","RPM","Spindle revolutions per minute. RPM ≈ 3.82 × SFM / diameter."],
+["ops","Chipload","Thickness of material each flute takes per revolution."],
+["ops","Feed rate","How fast the tool moves through the part, in in/min. Feed = RPM × flutes × chipload."],
+["ops","DOC / WOC","Depth of cut (axial, straight down) and width of cut (radial, sideways)."],
+["ops","Chatter","Vibration that screeches and leaves a wavy finish. Shorten stickout or change speed or engagement."],
+["ops","Built-up edge","Material welding onto the cutting edge, common in aluminum. Ruins the finish."],
+["ops","Crash","Tool, holder or spindle hitting something it shouldn't. Usually caused by a wrong offset."],
+["mat","6061 aluminum","The default shop material. Cheap and machines easily."],
+["mat","7075 aluminum","Stronger aluminum that cuts cleaner but costs more."],
+["mat","Delrin (acetal)","The easiest plastic to machine. Holds tolerance well."],
+["mat","Free-machining brass (360)","Cuts beautifully but contains about 2% lead. Wash your hands."],
+["mat","303 vs 304 stainless","303 is free-machining. 304 work-hardens and is tougher to cut."],
+["mat","Work hardening","Some metals, like stainless, get harder where the tool rubs. Keep the tool cutting, never dwelling."],
+["mat","Cold-rolled steel","Has built-in stress, so thin plate can warp after you face it."],
+["mat","Titanium","Cuttable on our mill with low speeds and coolant. Fine chips can catch fire."],
+["mat","Magnesium","Not allowed. Chips burn, and water-based coolant makes the fire worse."],
+["mat","PVC","Not allowed. Gives off hydrochloric acid gas when it heats up."],
+["mat","Carbon fiber / G10","Not allowed or restricted. Harmful dust; carbon dust is conductive and kills electronics."]
+];
+const TERMS=RAW.map((r,i)=>({id:i,c:r[0],t:r[1],d:r[2]}));
+const TERM_BY=Object.fromEntries(TERMS.map(t=>[t.t,t]));
+const JOBS=[
+["Face the whole top of a 6″-wide aluminum plate with the best possible finish.",["Fly cutter","Ball end mill","Spot drill","Engraving tool"],"A fly cutter's single wide-swinging bit covers a big area in one pass and leaves a mirror-like finish. A face mill would also work."],
+["Cut 1/4-20 threads in a hole on our 1100M.",["Thread mill","Spiral point tap, power tapped","Reamer","Counterbore"],"We can't power tap, so threads are thread-milled or hand-tapped. A reamer sizes a hole; it doesn't thread it."],
+["Hold a 1/2″ end mill for heavy roughing where the tool must not pull out.",["Set-screw holder","Drill chuck","ER collet chuck","Shell mill arbor"],"The set screw bears on the tool's Weldon flat, so the tool physically can't walk out. Drill chucks can't take side load."],
+["Hold a 1/4″ end mill for a finishing pass with as little runout as possible.",["ER collet chuck","Drill chuck","Set-screw holder","Shell mill arbor"],"An ER collet grips all the way around the shank, so runout is low. Best for finishing and small tools."],
+["Hold a drill whose shank size you don't have a collet for.",["Drill chuck","Set-screw holder","Shell mill arbor","Vise stop"],"A drill chuck adjusts across a wide size range. Fine for drilling, never for milling."],
+["Break all the sharp edges on a finished part.",["Chamfer mill","Ball end mill","Reamer","Roughing end mill"],"A chamfer mill puts a clean, consistent bevel on every edge in one pass."],
+["Start a hole on a flat face so the drill won't wander.",["Spot drill","Center drill","Reamer","Bullnose end mill"],"A spot drill makes a stiff, accurate starting point. A center drill is a lathe tool and breaks easily."],
+["Machine a smoothly curved 3D surface.",["Ball end mill","Flat end mill","Chamfer mill","Fly cutter"],"A ball end mill's round tip can follow any curve; small stepovers make it smooth."],
+["Engrave a serial number on a bracket.",["Engraving tool","Thread mill","Face mill","Reamer"],"An engraving tool's fine V-point cuts narrow, crisp letters."],
+["Hold a 10″ × 8″ plate that won't fit in the vise.",["Strap clamps","Soft jaws","Parallels","Vise stop"],"Strap clamps bolt straight to the T-slot table and hold parts of almost any size."],
+["Hold an oddly shaped part for its second op without marking finished surfaces.",["Soft jaws","Hard jaws","Strap clamps on the finished face","Drill chuck"],"Soft jaws are machined to the part's own shape and are softer than the part, so they grip without marring."],
+["Raise a part in the vise so the cut clears the top of the jaws.",["Parallels","Feeler gauges","Gauge blocks","Step blocks"],"Parallels exist for exactly this. Gauge blocks are measuring standards; step blocks are for strap clamps."],
+["Make 20 identical parts that each load in exactly the same spot.",["Vise stop","Dead blow hammer","Parallels","Edge finder"],"A vise stop gives every part the same X position, so one work offset works for all 20."],
+["Set part zero in X, Y and Z quickly using PathPilot.",["Passive probe","Dial indicator","Micrometer","Feeler gauge"],"The passive probe (tool 99) runs PathPilot's probing routines and writes the work offset for you."],
+["Check that the vise's fixed jaw is parallel to the X axis.",["Dial test indicator","Caliper","Micrometer","Edge finder"],"Sweep the fixed jaw with a DTI in the spindle while jogging X, and tap the vise until the reading barely moves."],
+["Measure a 0.500″ shaft to ±0.0002″.",["Micrometer","Caliper","Feeler gauge","Small hole gauge"],"A caliper is only good to about ±0.001″. A micrometer reads to 0.0001″."],
+["Measure the diameter of a 0.250″ hole precisely.",["Small hole gauge, then a micrometer","Caliper tips","Feeler gauge","Dial indicator"],"Set the small hole gauge in the hole, then measure the gauge with a mic."],
+["Swap tools quickly and have each tool return to the same height.",["TTS holders with the power drawbar","Drill chucks","An automatic tool changer","Plain R8 collets"],"TTS holders seat on the spindle nose, so lengths repeat. We have no ATC."],
+["Make a hole exactly 0.2500″ for a press-fit dowel pin.",["Drill slightly under, then ream","Drill to size only","Thread mill","Countersink"],"Drills cut slightly oversize and rough. A reamer brings the hole to an exact size and finish."],
+["Rough a pocket that needs a small fillet at the floor, with a tool that resists corner chipping.",["Bullnose end mill","Ball end mill","Engraving tool","Chamfer mill"],"A bullnose's corner radius is stronger than a sharp corner and leaves the fillet you want."],
+["The program is running and something looks off. You want to pause and look without ending the program.",["Feed hold","E-stop","Stop","Power off the machine"],"Feed hold pauses motion and Cycle Start resumes. Stop and E-stop both end the run."],
+["The tool is about to crash into the vise.",["E-stop","Turn feed override to 50%","Single block","Optional stop"],"E-stop cuts all motion immediately. Afterward: Reset, re-reference, and check everything before cutting again."],
+["A socket head cap screw needs to sit flush below the surface.",["Counterbore","Countersink","Spot drill","Reamer"],"A counterbore makes a flat-bottomed step for the screw head. Countersinks are for flat (cone) head screws."],
+["Drill a 1/4″ hole 2″ deep.",["Peck drilling","One continuous plunge","Adaptive clearing","Climb milling"],"That's 8× diameter. Pecking clears chips so the drill doesn't pack up and snap."],
+["Check whether a part rocks with a gap under one corner.",["Feeler gauge","Micrometer","Edge finder","Tool setter"],"Slide feeler leaves into the gap to find how big it is."],
+["Pick the cheap, easy default material for a shop bracket.",["6061 aluminum","Magnesium","PVC","G10"],"6061 machines easily and is cheap. The other three are banned or restricted in the shop."]
+].map(j=>({q:j[0],a:j[1][0],opts:j[1],why:j[2]}));
+
+/* ============ LEVELS: one stock rack per material ============ */
+const QO=[["Run it","ok"],["Run it slow, with coolant","care"],["Refuse as written","no"]];
+const LEVELS=[
+{id:"al",name:"6061 Aluminum",rack:"6061",mat:"al",blurb:"The default shop material. Learn the whole workflow here.",jobs:[
+ {no:"1101",t:"Avionics mounting bracket",d:"4 × 2 × 0.75 in block of 6061. One pocket on top.",steps:[
+  {s:"L",q:"The mill just powered on. Before you jog anywhere, what do you do?",o:[["Reference (home) every axis","home"],["Jog to the part and start","b-start"],["Set the work offset","probe"],["Air cut the program","air"]],why:"Referencing drives each axis to its home switch so the machine knows where it is. Machine coordinates are measured from those switches, and every offset depends on them.",k:["Referencing (homing)","Machine coordinates"],fx:{pp:"HOMED"}},
+  {s:"L",q:"The stock is a 4 × 2 in block. What holds it?",o:[["Vise","vise"],["Strap clamps","strap"],["Drill chuck","h-chuck"],["Step blocks","stepblk"]],why:"A block this size goes in the vise, our main way to hold parts. Strap clamps are for parts too big for the vise.",k:["Vise"],fx:{hold:"vise"}},
+  {s:"L",q:"The pocket goes deep, and the part sits below the top of the jaws. What goes under it?",o:[["Parallels","para"],["Gauge blocks","gauge-blk"],["Step blocks","stepblk"],["Feeler gauges","feeler"]],why:"Parallels are precision-ground bars that raise the part to a known height. Gauge blocks are measuring standards, and step blocks belong to strap clamps.",k:["Parallels"],fx:{para:true,part:true}},
+  {s:"L",q:"You crank the vise tight and the part lifts off one parallel. How do you seat it?",o:[["Tap it down with a dead blow hammer","hammer"],["Hit it with a steel hammer","hammer-steel"],["Crank the handle harder","vise"],["Leave it, it's close","no"]],why:"The moving jaw lifts slightly as it clamps. A dead blow hammer is shot-filled, so it seats the part without bouncing or denting it. When the parallels won't slide, it's down.",k:["Dead blow hammer","Moving jaw"]},
+  {s:"L",q:"Set part zero in X, Y and Z, fast, with PathPilot's routines.",o:[["Passive probe","probe"],["Caliper","cal"],["Dial indicator","dial"],["Micrometer","mic"]],why:"The passive probe (tool 99) runs PathPilot's probing routines and writes the work offset (G54) for you.",k:["Passive probe","Work offset (G54)","PathPilot"],fx:{probe:true,pp:"G54 SET"}},
+  {s:"P",q:"Program loaded. Line 1 is M3 S6112, start the spindle. The probe is still in it.",o:[["Pull the probe, load tool 1 first","h-er"],["Press Cycle Start, it's fine","b-start"],["Spindle override down to 50%","b-ovr"],["Turn on single block","b-single"]],why:"Never spin the spindle with the probe in. Swap to the cutting tool before you press Cycle Start.",k:["Passive probe","Cycle start"],fx:{probe:false}},
+  {s:"L",q:"Pick the end mill for roughing the pocket in 6061.",o:[["3 flute, uncoated carbide, high helix","em-flat-carbide-high-3"],["5 flute carbide, TiAlN coated","em-flat-tialn-std-5"],["4 flute HSS","em-flat-hss-low-4"],["Ball end mill","em-ball-carbide-high-2"]],why:"Aluminum makes big, sticky chips. Three flutes leave room for them and a high helix lifts them out. Skip TiAlN in aluminum, and HSS runs about a third as fast as carbide. A ball end mill can't leave a flat floor.",k:["Flat (square) end mill","Flute","Helix angle","Carbide","Coating","HSS (high-speed steel)"],fx:{tool:"em-flat-carbide-high-3"}},
+  {s:"L",q:"It's a 1/2 in end mill and you'll rough hard. Which holder keeps it from pulling out?",o:[["Set-screw holder","h-set"],["Drill chuck","h-chuck"],["ER collet chuck","h-er"],["Shell mill arbor","h-shell"]],why:"The set screw bears on the tool's Weldon flat, so the tool physically can't walk out under heavy load. A drill chuck can't take side load at all.",k:["Set-screw holder","Weldon flat","Tool holder"],fx:{holder:"h-set"}},
+  {s:"L",q:"Speed chart says 800 SFM for carbide in 6061. Tool diameter is 0.500 in. What RPM?",o:[["6,112 RPM","tach"],["1,600 RPM","tach"],["12,224 RPM","tach"],["1,528 RPM","tach"]],why:"RPM ≈ 3.82 × SFM ÷ D = 3.82 × 800 ÷ 0.5 = 6,112. That's under the 1100M's 7,500 RPM limit. 1,600 forgot the 3.82; 12,224 used the radius.",k:["SFM","RPM"],fx:{rpm:6112},f:"RPM ≈ 3.82 × SFM ÷ D"},
+  {s:"L",q:"Now the feed. 6,112 RPM, 3 flutes, 0.003 in per tooth.",o:[["55.0 in/min","feed"],["18.3 in/min","feed"],["5.5 in/min","feed"],["550 in/min","feed"]],why:"Feed = RPM × flutes × chipload = 6,112 × 3 × 0.003 = 55.0 in/min. Forgetting the flute count gives 18.3.",k:["Feed rate","Chipload"],fx:{feed:55},f:"F = RPM × z × fz"},
+  {s:"L",q:"Brand-new program, first time on the machine. What do you do before the real cut?",o:[["Air cut with Z raised, max velocity down","air"],["Run it full speed and watch","b-start"],["Open the doors to see better","warn"],["Turn the coolant off","coolant"]],why:"An air cut runs the program with Z raised above the part, so a bad path hits nothing. Turn max velocity override down so you have time to react.",k:["Air cut","Max velocity override"],fx:{run:"air",pp:"AIR CUT"}},
+  {s:"P",q:"Cutting now. Aluminum is welding onto the cutting edge and the finish is tearing.",o:[["Flood coolant on, keep chips cleared","coolant"],["Slow the feed way down","feed"],["Swap to a TiAlN tool","em-flat-tialn-std-5"],["Ignore it","no"]],why:"That's built-up edge. Coolant keeps the edge cool and flushes chips so they don't get re-cut. Slowing the feed makes the tool rub, which makes it worse.",k:["Built-up edge","Flood coolant"],pre:{run:"cut",pp:"RUN"},fx:{run:"cut",coolant:true}},
+  {s:"L",q:"Pocket depth tolerance is ±0.010 in. What do you check it with?",o:[["Caliper depth rod","cal"],["Feeler gauge","feeler"],["Dial test indicator","dti"],["Small hole gauge","hole"]],why:"A caliper reads to about ±0.001 in. By the 10:1 rule that's fine for a ±0.010 in tolerance.",k:["Caliper","10:1 rule"],fx:{run:null,coolant:false,pp:"DONE"}}
+ ]},
+ {no:"1102",t:"Comms slot plate",d:"10 × 8 × 0.25 in 6061 plate. Through slots, drilled and threaded holes.",steps:[
+  {s:"L",q:"The plate is 10 × 8 in. It won't fit in the vise. What holds it?",o:[["Strap clamps","strap"],["Soft jaws","softjaw"],["Parallels","para"],["Vise stop","stop"]],why:"Strap clamps bolt straight to the T-slot table and hold parts of almost any size.",k:["Strap clamp","T-slot table"],fx:{hold:"strap",part:true}},
+  {s:"L",q:"The back end of each strap clamp needs holding up at the right height. What goes there?",o:[["Step block","stepblk"],["Gauge blocks","gauge-blk"],["Dead blow hammer","hammer"],["Dowel pin","dowel"]],why:"A step block supports the heel of the clamp so it presses down flat on the part instead of tipping.",k:["Step block"]},
+  {s:"L",q:"What runs from the T-slot nut up through the clamp?",o:[["Stud","stud"],["Dowel pin","dowel"],["Drawbar","drawbar"],["Tap","tap"]],why:"The T-slot nut slides into the table's groove, and a threaded stud runs from it up through the strap. A nut on top pulls the clamp down.",k:["Stud","T-slot nut"]},
+  {s:"L",q:"The slots cut all the way through. What goes under the plate first?",o:[["Sacrificial plate","sacr"],["Parallels","para"],["Fixture plate","fixture"],["Nothing","no"]],why:"A throwaway plate under the part means through-cuts bite into it, not into the table.",k:["Sacrificial plate"],fx:{sacr:true}},
+  {s:"L",q:"Finishing the slots with a 1/4 in end mill. You want the least runout possible.",o:[["ER collet chuck","h-er"],["Set-screw holder","h-set"],["Drill chuck","h-chuck"],["Shell mill arbor","h-shell"]],why:"An ER collet grips all the way around the shank, so the tool spins true. Low runout means even flute load and a better finish.",k:["ER collet chuck","ER collet","Runout"],fx:{holder:"h-er",tool:"em-flat-carbide-high-3"}},
+  {s:"L",q:"800 SFM with a 1/4 in tool works out to 12,224 RPM. What do you actually run?",o:[["7,500 RPM, the machine max","tach"],["12,224 RPM","tach"],["3,056 RPM","tach"],["6,112 RPM","tach"]],why:"The 1100M spindle tops out at 7,500 RPM. Run at max and work your feed out from 7,500, not from the number the chart wanted.",k:["Spindle","RPM"],fx:{rpm:7500},f:"RPM ≈ 3.82 × 800 ÷ 0.25 = 12,224 → capped"},
+  {s:"L",q:"7,500 RPM, 3 flutes, 0.0015 in per tooth. Feed?",o:[["33.8 in/min","feed"],["11.3 in/min","feed"],["337.5 in/min","feed"],["22.5 in/min","feed"]],why:"7,500 × 3 × 0.0015 = 33.8 in/min. Dropping the flutes gives 11.3; using 2 flutes gives 22.5.",k:["Feed rate"],fx:{feed:33.8},f:"F = RPM × z × fz"},
+  {s:"P",q:"M6 T2. Tool change. What happens on our mill?",o:[["It pauses; swap the TTS holder with the power drawbar","h-er"],["The ATC grabs tool 2","atc"],["The control skips it","no"],["You re-reference the machine","home"]],why:"We have no automatic tool changer. M6 pauses the program, you press the power drawbar button to drop the holder, put the next one in, and resume. TTS holders seat on the spindle nose, so each length repeats.",k:["M6","Power drawbar","ATC (automatic tool changer)","TTS (Tormach Tooling System)","Spindle nose"],fx:{pp:"M6 T2"}},
+  {s:"L",q:"Four holes have to start exactly on location. First tool?",o:[["Spot drill","spot"],["Center drill","cdrill"],["Reamer","ream"],["Bullnose end mill","em-bull-carbide-high-3"]],why:"A spot drill is short and stiff, so it makes an accurate starting dimple. A center drill is a lathe tool and breaks easily.",k:["Spot drill","Center drill"],fx:{tool:"spot",holder:"h-er"}},
+  {s:"L",q:"Each hole is 1/4 in across and 1.25 in deep, 5× the diameter. How do you drill it?",o:[["Peck drilling","drill"],["One continuous plunge","drill"],["Adaptive clearing","path"],["Climb milling","path"]],why:"Past about 3× diameter, chips pack in the flutes. Pecking retracts to clear them so the drill doesn't snap.",k:["Peck drilling","Twist drill"],fx:{tool:"drill",holder:"h-chuck",run:"drill"}},
+  {s:"L",q:"Two holes need 1/4-20 threads.",o:[["Thread mill","thread"],["Spiral point tap, power tapped","tap"],["Reamer","ream"],["Counterbore","cbore"]],why:"We can't power tap on our mill, so threads are thread-milled or hand tapped. A reamer sizes a hole; it doesn't thread it.",k:["Thread mill","Tap"],fx:{tool:"thread",holder:"h-er",run:null}},
+  {s:"L",q:"Last op: break every sharp edge.",o:[["Chamfer mill","chamfer"],["Ball end mill","em-ball-carbide-high-2"],["Roughing end mill","em-rough-carbide-std-4"],["Reamer","ream"]],why:"A chamfer mill puts a clean, even bevel on every edge in one pass.",k:["Chamfer mill"],fx:{tool:"chamfer",run:"cut"}}
+ ]}
+]},
+{id:"delrin",name:"Delrin",rack:"DELRIN",mat:"delrin",blurb:"The easiest plastic. Sharp tools, big chips, no melting.",jobs:[
+ {no:"2101",t:"Insulator spacers",d:"0.125 in thick Delrin discs cut out of a plate, each with a press-fit dowel hole.",steps:[
+  {s:"M",q:"Avionics wants insulator spacers in Delrin. Can the shop run that?",o:[["Yes, it's the easiest plastic to machine","ok"],["No, plastics are banned","no"],["Only with no coolant at all","coolant"],["Only on a lathe","warn"]],why:"Delrin (acetal) machines easily and holds tolerance well. PVC is the plastic that's banned.",k:["Delrin (acetal)","PVC"]},
+  {s:"L",q:"The spacers are cut out of a plate. How do you keep each one from breaking loose on the last pass?",o:[["Leave tabs","tabs"],["Vise stop","stop"],["More strap clamps","strap"],["Feed faster","feed"]],why:"Tabs are small bridges that hold each cut-out part to the stock. You snap or trim them off afterward.",k:["Tabs"],fx:{hold:"strap",part:true,sacr:true,tabs:true}},
+  {s:"L",q:"Pick the end mill for Delrin.",o:[["1 flute, sharp, uncoated carbide","em-flat-carbide-high-1"],["4 flute TiAlN, dulled on steel jobs","em-flat-tialn-std-4"],["5 flute TiN finisher","em-flat-tin-std-5"],["Ball end mill","em-ball-carbide-high-2"]],why:"Plastic melts when the cut gets hot. One sharp flute takes big chips that carry the heat away. A dull edge rubs instead of cutting, and lots of flutes leave no room for chips.",k:["Flute","Flat (square) end mill"],fx:{tool:"em-flat-carbide-high-1",holder:"h-er"}},
+  {s:"L",q:"1/4 in tool at 7,500 RPM, the machine max. 1 flute, 0.004 in per tooth. Feed?",o:[["30 in/min","feed"],["120 in/min","feed"],["3 in/min","feed"],["7.5 in/min","feed"]],why:"7,500 × 1 × 0.004 = 30 in/min. With one flute, the chipload is the whole story.",k:["Chipload","Feed rate"],fx:{rpm:7500,feed:30},f:"F = RPM × z × fz"},
+  {s:"P",q:"Chips are melting and gumming up around the tool.",o:[["Feed override up for thicker chips","b-ovr"],["Feed override way down","b-ovr"],["Spindle override to max","b-ovr"],["Single block through it","b-single"]],why:"Melting means each flute is rubbing, not cutting. A thicker chip, from more feed or fewer RPM, carries heat away with it. Going slower makes it rub more.",k:["Feed override","Chipload","Spindle override"],pre:{run:"cut",pp:"RUN"},fx:{run:"cut"}},
+  {s:"L",q:"Spacer thickness must be 0.125 in ±0.001 in. What do you measure with?",o:[["Micrometer","mic"],["Caliper","cal"],["Feeler gauge","feeler"],["Dial bore gauge","bore"]],why:"10:1 rule: a ±0.001 in tolerance needs a tool good to 0.0001 in. That's a micrometer. A caliper is only good to about ±0.001 in.",k:["Micrometer","10:1 rule","Caliper"],fx:{run:null}},
+  {s:"L",q:"Each spacer needs a 0.2500 in hole for a press-fit dowel pin.",o:[["Drill slightly under, then ream","ream"],["Drill to size","drill"],["Thread mill","thread"],["Countersink","csink"]],why:"Drills cut slightly oversize and rough. A reamer brings the hole to an exact size and a smooth wall.",k:["Reamer","Dowel pin"],fx:{tool:"ream",holder:"h-er",run:"drill"}},
+  {s:"L",q:"Quick one. What's the difference between resolution and accuracy?",o:[["Resolution is the smallest step shown; accuracy is how close to true","bulb"],["They mean the same thing","no"],["Accuracy is the smallest step shown","bulb"],["Resolution only applies to calipers","cal"]],why:"A display can show 0.0001 in and still be off by 0.001 in. Resolution is what it shows, accuracy is how right it is.",k:["Resolution vs accuracy"],fx:{run:null}}
+ ]}
+]},
+{id:"brass",name:"360 Brass",rack:"BRASS",mat:"brass",blurb:"Cuts beautifully. Grabs high-helix tools. Contains lead.",jobs:[
+ {no:"3101",t:"RF connector block",d:"1.5 × 1 × 1 in 360 brass block with an engraved serial. 20 pieces.",steps:[
+  {s:"L",q:"The vise was just bolted down. How do you check the fixed jaw is parallel to X?",o:[["Dial test indicator","dti"],["Caliper","cal"],["Micrometer","mic"],["Edge finder","edge"]],why:"Put a DTI in the spindle, sweep the fixed jaw while you jog X, and tap the vise until the needle barely moves.",k:["Indicating the vise","Dial test indicator (DTI)","Jog"],fx:{hold:"vise"}},
+  {s:"L",q:"Why indicate the fixed jaw and not the moving one?",o:[["It's the reference that doesn't move","vise"],["The moving jaw is too short","vise"],["Habit, either works","no"],["The fixed jaw is softer","softjaw"]],why:"The fixed jaw is the reference you locate from. The moving jaw slides and lifts slightly as it clamps.",k:["Fixed jaw","Moving jaw"],fx:{part:true,para:true}},
+  {s:"L",q:"Pick the end mill for 360 brass.",o:[["2 flute carbide, low helix","em-flat-carbide-low-2"],["3 flute, high helix aluminum cutter","em-flat-zrn-high-3"],["4 flute TiAlN","em-flat-tialn-std-4"],["Engraving tool","engrave"]],why:"High helix flutes pull themselves into brass and grab. A low helix cuts it cleanly.",k:["Helix angle","Free-machining brass (360)"],fx:{tool:"em-flat-carbide-low-2",holder:"h-er"}},
+  {s:"L",q:"Chart says 400 SFM. Tool is 0.375 in. What RPM?",o:[["4,075 RPM","tach"],["1,067 RPM","tach"],["573 RPM","tach"],["8,149 RPM","tach"]],why:"3.82 × 400 ÷ 0.375 = 4,075 RPM. 1,067 forgot the 3.82, 573 multiplied by D, and 8,149 used the radius.",k:["SFM","RPM"],fx:{rpm:4075},f:"RPM ≈ 3.82 × SFM ÷ D"},
+  {s:"L",q:"4,075 RPM, 2 flutes, 0.002 in per tooth. Feed?",o:[["16.3 in/min","feed"],["8.2 in/min","feed"],["32.6 in/min","feed"],["163 in/min","feed"]],why:"4,075 × 2 × 0.002 = 16.3 in/min.",k:["Feed rate","Chipload"],fx:{feed:16.3},f:"F = RPM × z × fz"},
+  {s:"L",q:"Engrave the serial number on the side.",o:[["Engraving tool","engrave"],["Thread mill","thread"],["Face mill","face"],["Reamer","ream"]],why:"An engraving tool's fine V-point cuts narrow, crisp letters.",k:["Engraving tool"],fx:{tool:"engrave",run:"cut"}},
+  {s:"L",q:"Second op. The block now has curved finished faces. Hold it without marking them.",o:[["Soft jaws","softjaw"],["Hard jaws","hardjaw"],["Strap clamps on the finished face","strap"],["Drill chuck","h-chuck"]],why:"Soft jaws are machined to the part's own shape and are softer than it, so they grip without marring. Flipping the part is a new setup with its own zero.",k:["Soft jaws","Hard jaws","Setup"],fx:{hold:"softjaw",run:null}},
+  {s:"M",q:"We need 20 of these, each loaded in exactly the same spot.",o:[["Vise stop","stop"],["Dead blow hammer","hammer"],["Parallels","para"],["Edge finder","edge"]],why:"A vise stop puts every part in the same X position, so one work offset works for all 20.",k:["Vise stop"]},
+  {s:"L",q:"Check the 0.250 in hole diameter precisely.",o:[["Small hole gauge, then a micrometer","hole"],["Caliper tips","cal"],["Feeler gauge","feeler"],["Dial indicator","dial"]],why:"Expand the small hole gauge in the hole, pull it out, and measure the gauge with a mic.",k:["Small hole (ball) gauge","Micrometer"]},
+  {s:"L",q:"Brass is done for the day. Before lunch?",o:[["Wash your hands","wash"],["Blow chips off your shirt with air","air"],["Nothing, brass is harmless","no"],["Shake your gloves out on the floor","broom"]],why:"360 brass contains about 2% lead. Wash your hands before you eat.",k:["Free-machining brass (360)"]}
+ ]}
+]},
+{id:"crs",name:"Cold-Rolled Steel",rack:"STEEL",mat:"crs",blurb:"Tough and hot to cut. Thin plate can warp after facing.",jobs:[
+ {no:"4101",t:"Ground support fixture plate",d:"6 × 6 × 0.5 in cold-rolled steel plate. Faced top and one big pocket.",steps:[
+  {s:"L",q:"Pick the end mill for cold-rolled steel.",o:[["4 flute carbide, TiAlN coated","em-flat-tialn-std-4"],["3 flute uncoated, high helix","em-flat-carbide-high-3"],["1 flute plastic cutter","em-flat-carbide-high-1"],["Engraving tool","engrave"]],why:"Steel is tough and the cut runs hot. More flutes make a stronger tool, and a TiAlN coating stands up to the heat. Aluminum-style tools wear out fast in steel.",k:["Coating","Flute","Carbide"],fx:{hold:"vise",part:true,para:true,tool:"em-flat-tialn-std-4",holder:"h-set"}},
+  {s:"L",q:"Chart says 350 SFM. Tool is 0.500 in. What RPM?",o:[["2,674 RPM","tach"],["700 RPM","tach"],["669 RPM","tach"],["5,348 RPM","tach"]],why:"3.82 × 350 ÷ 0.5 = 2,674 RPM.",k:["RPM","SFM"],fx:{rpm:2674},f:"RPM ≈ 3.82 × SFM ÷ D"},
+  {s:"L",q:"2,674 RPM, 4 flutes, 0.002 in per tooth. Feed?",o:[["21.4 in/min","feed"],["5.3 in/min","feed"],["10.7 in/min","feed"],["214 in/min","feed"]],why:"2,674 × 4 × 0.002 = 21.4 in/min. 10.7 is what you'd get with 2 flutes.",k:["Feed rate"],fx:{feed:21.4},f:"F = RPM × z × fz"},
+  {s:"L",q:"Face the whole 6 in top with the best finish you can get.",o:[["Fly cutter","fly"],["Ball end mill","em-ball-carbide-high-2"],["Spot drill","spot"],["Engraving tool","engrave"]],why:"A fly cutter's single bit on a wide arm covers the face in one pass and leaves a great finish. A face mill would also work.",k:["Fly cutter","Face mill"],fx:{tool:"fly",holder:"none",run:"cut",rpm:900,feed:6}},
+  {s:"P",q:"Facing's done. You unclamp the plate and it rocks on the bench. It's bowed.",o:[["Cold-rolled steel's built-in stress released","mat-crs"],["The coolant warped it","coolant"],["The fly cutter was too sharp","fly"],["Cosine error","dti"]],why:"Cold-rolled steel carries stress from rolling. Cutting one face releases some of it and the plate warps. Take light passes off both sides, flipping between them.",k:["Cold-rolled steel"],fx:{run:null}},
+  {s:"L",q:"How big is the gap under the rocking corner?",o:[["Feeler gauge","feeler"],["Micrometer","mic"],["Edge finder","edge"],["Tool setter","setter"]],why:"Slide feeler leaves into the gap until one fits snug. Its marked thickness is your gap.",k:["Feeler gauge"]},
+  {s:"L",q:"Which Fusion toolpath roughs the big pocket and stays easy on our 2 hp spindle?",o:[["Adaptive clearing","path"],["Peck drilling","drill"],["Single block","b-single"],["One full-width slot","path"]],why:"Adaptive clearing takes a deep cut with a small, constant sideways engagement, so a small machine never gets overloaded.",k:["Adaptive clearing","Toolpath","DOC / WOC"],fx:{tool:"em-flat-tialn-std-4",holder:"h-set",rpm:2674,feed:21.4}},
+  {s:"L",q:"Climb or conventional for the finish pass?",o:[["Climb milling","path"],["Conventional milling","path"],["Either, no difference","no"],["Plunge only","drill"]],why:"Climb milling is the CNC default and gives a better finish. Conventional is for manual mills with backlash.",k:["Climb milling","Conventional milling"]},
+  {s:"P",q:"A loud screech, and wavy marks are showing up on the wall.",o:[["Shorten the tool's stickout","h-set"],["Pull the tool out farther","h-set"],["Turn off the coolant","coolant"],["Wait, it'll settle","no"]],why:"That's chatter. Deflection grows with the cube of stickout, so even a little shorter helps a lot. Changing speed or engagement also helps.",k:["Chatter","Stickout"],pre:{run:"chatter",pp:"RUN"},fx:{run:"cut"}}
+ ]}
+]},
+{id:"ss",name:"304 Stainless",rack:"304",mat:"304",blurb:"Work-hardens the moment your tool rubs.",jobs:[
+ {no:"5101",t:"Propulsion valve fitting",d:"Stainless block with drilled ports and flat-head screw holes.",steps:[
+  {s:"M",q:"The drawing says 303 or 304 is fine. Which should we buy?",o:[["303, it's free-machining","mat-303"],["304, it's easier to cut","mat-304"],["Either, they cut the same","no"],["Magnesium, it's lighter","mat-mg"]],why:"303 is the free-machining stainless. 304 work-hardens and is tougher to cut.",k:["303 vs 304 stainless"]},
+  {s:"L",q:"Purchasing sent 304 anyway. Pick the end mill.",o:[["4 flute TiAlN carbide, new and sharp","em-flat-tialn-std-4"],["Used 4 flute with a worn edge","em-flat-tialn-std-4"],["3 flute uncoated aluminum cutter","em-flat-carbide-high-3"],["HSS 2 flute","em-flat-hss-low-2"]],why:"304 work-hardens. You need a sharp, heat-resistant edge that keeps cutting. A worn edge rubs and hardens the surface ahead of it.",k:["Work hardening","Carbide","Coating"],fx:{hold:"vise",part:true,para:true,tool:"em-flat-tialn-std-4",holder:"h-er"}},
+  {s:"L",q:"Chart says 250 SFM. Tool is 0.375 in. What RPM?",o:[["2,547 RPM","tach"],["667 RPM","tach"],["358 RPM","tach"],["5,093 RPM","tach"]],why:"3.82 × 250 ÷ 0.375 = 2,547 RPM.",k:["RPM"],fx:{rpm:2547},f:"RPM ≈ 3.82 × SFM ÷ D"},
+  {s:"L",q:"2,547 RPM, 4 flutes, 0.0015 in per tooth. Feed?",o:[["15.3 in/min","feed"],["3.8 in/min","feed"],["7.6 in/min","feed"],["153 in/min","feed"]],why:"2,547 × 4 × 0.0015 = 15.3 in/min.",k:["Feed rate","Chipload"],fx:{feed:15.3},f:"F = RPM × z × fz"},
+  {s:"L",q:"Coolant for roughing stainless?",o:[["Flood coolant on","coolant"],["Run dry","no"],["One squirt of oil at the start","care"],["Compressed air only","air"]],why:"Stainless makes a lot of heat at the edge. Flood coolant carries it away and washes chips out of the cut.",k:["Flood coolant"],fx:{coolant:true,run:"cut",pp:"RUN"}},
+  {s:"P",q:"The drill paused at the bottom of a hole. Now the spot is glazed and the drill won't bite.",o:[["Work hardening","mat-304"],["Built-up edge","em-flat-carbide-high-3"],["Runout","h-er"],["Cosine error","dti"]],why:"Stainless gets harder where a tool rubs or dwells. Keep the tool cutting with a real chipload and never let it sit.",k:["Work hardening"],pre:{tool:"drill",holder:"h-chuck",run:"drill"},fx:{run:"cut",tool:"em-flat-tialn-std-4",holder:"h-er"}},
+  {s:"P",q:"Mid-program, something looks off. You want to stop and look without ending the run.",o:[["Feed hold","b-hold"],["E-stop","b-estop"],["Stop","b-stop"],["Power off the machine","b-power"]],why:"Feed hold pauses motion while the spindle keeps turning, and Cycle Start resumes. Stop and E-stop both end the run.",k:["Feed hold","Cycle start","Stop"],pre:{run:"cut",pp:"RUN"},fx:{run:null,pp:"HOLD"}},
+  {s:"L",q:"A flat-head screw has to sit flush with the top.",o:[["Countersink","csink"],["Counterbore","cbore"],["Spot drill","spot"],["Reamer","ream"]],why:"A countersink cuts a cone that matches a flat-head screw. A counterbore is the flat-bottomed step for socket head screws.",k:["Countersink","Counterbore"],fx:{tool:"csink",pp:"RUN",run:"drill",coolant:false}},
+  {s:"L",q:"Your DTI stylus is tilted steeply against the surface. What does the reading do?",o:[["Reads high (cosine error)","dti"],["Reads low","dti"],["Reads exactly right","ok"],["Freezes","no"]],why:"A tilted stylus gives cosine error: the indicator reads higher than the real movement. Keep the stylus close to parallel with the surface.",k:["Cosine error","Dial test indicator (DTI)"],fx:{run:null,pp:"DONE"}}
+ ]}
+]},
+{id:"ti",name:"Titanium",rack:"TI",mat:"ti",blurb:"Allowed, slowly, with coolant. Its chips can burn.",jobs:[
+ {no:"6101",t:"Flight hardware bracket",d:"Titanium bracket. Low speeds, flood coolant, careful setup.",steps:[
+  {s:"M",q:"Can we cut titanium on our mill?",o:[["Yes, with low speeds and coolant","care"],["No, it's banned","no"],["Yes, at aluminum speeds","mat-al"],["Only dry","air"]],why:"Titanium is cuttable on our mill with low speeds and flood coolant. Its fine chips can catch fire.",k:["Titanium"],fx:{hold:"vise",part:true,para:true}},
+  {s:"L",q:"Pick the end mill for titanium.",o:[["4 flute TiAlN carbide, short stickout","em-flat-tialn-std-4"],["3 flute uncoated aluminum cutter","em-flat-carbide-high-3"],["1 flute plastic cutter","em-flat-carbide-high-1"],["Ball end mill, long reach","em-ball-carbide-high-2"]],why:"Titanium is tough and holds heat at the cutting edge. A rigid, coated carbide tool held short gives the best chance.",k:["Stickout","Coating"],fx:{tool:"em-flat-tialn-std-4",holder:"h-er"}},
+  {s:"L",q:"Chart says 150 SFM. Tool is 0.375 in. What RPM?",o:[["1,528 RPM","tach"],["400 RPM","tach"],["215 RPM","tach"],["3,056 RPM","tach"]],why:"3.82 × 150 ÷ 0.375 = 1,528 RPM. Low SFM is the whole point in titanium.",k:["RPM","SFM"],fx:{rpm:1528},f:"RPM ≈ 3.82 × SFM ÷ D"},
+  {s:"L",q:"1,528 RPM, 4 flutes, 0.0015 in per tooth. Feed?",o:[["9.2 in/min","feed"],["2.3 in/min","feed"],["4.6 in/min","feed"],["92 in/min","feed"]],why:"1,528 × 4 × 0.0015 = 9.2 in/min.",k:["Feed rate"],fx:{feed:9.2},f:"F = RPM × z × fz"},
+  {s:"L",q:"Where does PathPilot keep each tool's length and diameter?",o:[["The tool table","book"],["Work offset G54","probe"],["Inside the G-code","pp"],["Machine coordinates","home"]],why:"The tool table lists every tool number with its length and diameter. The tool length offset is how the control knows where the tip is.",k:["Tool table","Tool length offset","G-code"]},
+  {s:"L",q:"You're measuring a new TTS tool's length on the surface plate, away from the mill. What do you use?",o:[["Height gauge","height"],["Tool setter (ETS)","setter"],["Caliper","cal"],["Feeler gauge","feeler"]],why:"A height gauge on the surface plate measures TTS lengths off the machine, so the mill keeps cutting. The tool setter is the switch on the table.",k:["Height gauge","Tool setter (ETS)","Surface plate"]},
+  {s:"L",q:"Fusion's WCS is the top-left corner. You probed the center of the part. What happens?",o:[["The tool cuts in the wrong place, maybe crashes","warn"],["PathPilot fixes it automatically","pp"],["Nothing, zero is zero","ok"],["The spindle won't start","b-stop"]],why:"The WCS in Fusion and the work offset on the machine have to match. A wrong offset is the usual cause of a crash.",k:["WCS","Crash","Work offset (G54)"]},
+  {s:"P",q:"Fine titanium chips are piling up inside the enclosure.",o:[["Clean them out regularly","broom"],["Let them pile up till the end","no"],["Blow them out into the room","air"],["Sweep them into the coolant tank","coolant"]],why:"Fine titanium chips can catch fire. Keep them cleaned up and away from heat.",k:["Titanium","Enclosure"],pre:{run:"cut",coolant:true,pp:"RUN"},fx:{run:"cut"}},
+  {s:"P",q:"The tool is diving toward the vise!",o:[["E-stop","b-estop"],["Feed override to 50%","b-ovr"],["Single block","b-single"],["Optional stop","b-hold"]],why:"E-stop cuts power to all motion and the spindle immediately. Nothing else is fast enough.",k:["E-stop","Optional stop (M01)"],pre:{run:"crash",pp:"RUN"},fx:{estop:true,run:null,pp:"E-STOP",coolant:false}},
+  {s:"L",q:"E-stop is pressed. Before you cut again?",o:[["Reset, re-reference, check everything","home"],["Release it and press Cycle Start","b-start"],["Rerun from line 1 right away","b-start"],["Nothing","no"]],why:"After an E-stop, reset, re-reference every axis, and check the offsets, the tool and the part before you cut again.",k:["Referencing (homing)"],fx:{estop:false,pp:"HOMED"}}
+ ]}
+]},
+{id:"q",name:"Quarantine Bin",rack:"???",mat:"mg",blurb:"Sketchy tickets from around the lab. Run it, run it carefully, or refuse.",jobs:[
+ {no:"7101",t:"The sketchy ticket pile",d:"A stack of tickets from teams around the lab. Decide what the shop can actually run.",steps:[
+  {s:"T",q:"Magnesium camera mount, 2 pieces. Rush job.",o:QO,a:2,fixed:true,why:"Magnesium isn't allowed. Its chips burn, and water-based coolant makes the fire worse.",k:["Magnesium"],pre:{hold:"vise",part:true,para:true,mat:"mg",tool:null,holder:null}},
+  {s:"T",q:"PVC cable guide for the harness.",o:QO,a:2,fixed:true,why:"PVC isn't allowed. It gives off hydrochloric acid gas when it heats up.",k:["PVC"],pre:{mat:"pvc"}},
+  {s:"T",q:"Carbon fiber side panel. Just cut the outline.",o:QO,a:2,fixed:true,why:"Carbon fiber and G10 are not allowed or restricted. The dust is harmful, and carbon dust is conductive and kills electronics.",k:["Carbon fiber / G10"],pre:{mat:"cf"}},
+  {s:"T",q:"7075 aluminum bracket. It has to be stronger than 6061.",o:QO,a:0,fixed:true,why:"7075 is a stronger aluminum that cuts cleaner than 6061. It just costs more.",k:["7075 aluminum","6061 aluminum"],pre:{mat:"7075"}},
+  {s:"T",q:"Titanium fastener plate.",o:QO,a:1,fixed:true,why:"Titanium runs on our mill with low speeds and flood coolant. Keep the fine chips cleaned up.",k:["Titanium"],pre:{mat:"ti"}},
+  {s:"T",q:"Delrin pulley, 3 pieces.",o:QO,a:0,fixed:true,why:"Delrin is the easiest plastic to machine and holds tolerance well.",k:["Delrin (acetal)"],pre:{mat:"delrin"}},
+  {s:"T",q:"Mill a slot with the end mill held in the drill chuck.",o:QO,a:2,fixed:true,why:"A drill chuck takes side load badly and can work loose on its Jacobs taper. Never mill with it; use an ER collet chuck or a set-screw holder.",k:["Drill chuck","Jacobs taper"],pre:{mat:"al",tool:"em-flat-carbide-high-3",holder:"h-chuck"}},
+  {s:"T",q:"Power-tap twelve 10-32 holes on the 1100M.",o:QO,a:2,fixed:true,why:"We can't power tap here. Thread mill the holes, or drill them and hand tap.",k:["Tap","Thread mill","Spiral point tap"],pre:{tool:"tap",holder:"h-chuck"}},
+  {s:"T",q:"Bracket with features on five faces, all in one setup.",o:QO,a:2,fixed:true,why:"The 1100M is a 3-axis mill with no 4th or 5th axis. Every face you cut is a new setup with its own zero.",k:["3-axis mill","4th / 5th axis","Setup"],pre:{tool:null,holder:null}},
+  {s:"T",q:"Rail that's 20 in long in X. Cut it in one setup.",o:QO,a:2,fixed:true,why:"X travel on the 1100M is 18 in (18 × 11 × 16.25 in). A 20 in part won't reach end to end.",k:["Travel"]},
+  {s:"T",q:"Start the holes with a center drill.",o:QO,a:2,fixed:true,why:"A center drill is a lathe tool and it's fragile. On the mill, start holes with a spot drill.",k:["Center drill","Spot drill"],pre:{tool:"cdrill",holder:"h-er"}}
+ ]}
+]}
+];
+
+/* ============ PIXEL ART ============ */
+const K="#0b0d17",S0="#232838",S1="#3c4459",S2="#5f6a84",S3="#8f9ab2",S4="#c3ccdb",S5="#eef2f8";
+const VB="#3f5a8a",VBd="#2b3f63",YEL="#f4c542",YELd="#b8892a",RED="#e5483d",REDl="#ff8f86",GRN="#52c46d",CYA="#62d6e8",ORG="#e8873a",BLU="#4a7cf0",SKIN="#e0ac7e";
+const COAT={carbide:["#a3acbd","#5c6578","#d5dbe6"],hss:["#d6dbe3","#8a93a3","#ffffff"],tin:["#e2b444","#9a7420","#f7dd8a"],tialn:["#6a5a96","#2e2448","#9a8acc"],zrn:["#e8d79a","#a89656","#fff3c8"]};
+const MAT={al:["#c9d3df","6061"],"7075":["#b4c0d2","7075"],delrin:["#efece0","DEL"],brass:["#d8a73c","360"],crs:["#7f8590","CRS"],"303":["#c4ced8","303"],"304":["#aab6c6","304"],ti:["#8d889f","TI"],mg:["#dcdcdc","MG"],pvc:["#8f9aa3","PVC"],cf:["#34343c","CF"],g10:["#6fa35a","G10"]};
+const FONT={A:"010101111101101",B:"110101110101110",C:"011100100100011",D:"110101101101110",E:"111100110100111",F:"111100110100100",G:"011100101101011",H:"101101111101101",I:"111010010010111",J:"001001001101010",K:"101101110101101",L:"100100100100111",M:"101111111101101",N:"110101101101101",O:"010101101101010",P:"110101110100100",Q:"010101101110011",R:"110101110101101",S:"011100010001110",T:"111010010010010",U:"101101101101111",V:"101101101101010",W:"101101111111101",X:"101101010101101",Y:"101101010010010",Z:"111001010100111","0":"111101101101111","1":"010110010010111","2":"110001010100111","3":"110001010001110","4":"101101111001001","5":"111100110001110","6":"011100111101111","7":"111001010010010","8":"111101111101111","9":"111101111001110",".":"000000000000010","-":"000000111000000","!":"010010010000010","?":"110001010000010","/":"001001010100100",":":"000010000010000","+":"000010111010000","#":"101111101111101",",":"000000000010100","%":"101001010100101",">":"100010001010100","<":"001010100010001","=":"000111000111000","*":"101010101000000","'":"010010000000000"};
+function shade(hex,a){const n=parseInt(hex.slice(1),16);const f=v=>Math.max(0,Math.min(255,v+a));return"#"+[f(n>>16),f((n>>8)&255),f(n&255)].map(v=>v.toString(16).padStart(2,"0")).join("")}
+function lum(hex){const n=parseInt(hex.slice(1),16);return((n>>16)*.3+((n>>8)&255)*.59+(n&255)*.11)}
+
+let g,OX=0,OY=0,S=1,OUT=0,SP=0;
+function R(c,x,y,w=1,h=1){if(c==null)return;if(OUT){g.fillStyle=K;g.fillRect(OX+(x-1)*S,OY+(y-1)*S,(w+2)*S,(h+2)*S)}else{g.fillStyle=c;g.fillRect(OX+x*S,OY+y*S,w*S,h*S)}}
+function T(str,x,y,c){if(OUT)return;g.fillStyle=c;let cx=0;for(const ch of String(str).toUpperCase()){const f=FONT[ch];if(f)for(let i=0;i<15;i++)if(f[i]==="1")g.fillRect(OX+(x+cx+i%3)*S,OY+(y+(i/3|0))*S,S,S);cx+=4}}
+const textW=s=>String(s).length*4-1;
+
+const SF={};
+SF.em=p=>{const tip=p[1],[b,d]=COAT[p[2]]||COAT.carbide,helix=p[3],n=+p[4]||3,sh=COAT.carbide;
+ R(sh[0],8,1,8,9);R(sh[2],9,1,1,9);R(sh[1],15,1,1,9);R(b,8,10,8,10);
+ const sl=helix==="high"?1:helix==="low"?.34:.6;
+ for(let r=0;r<10;r++)for(let f=0;f<n;f++){const o=((Math.floor(r*sl+SP+f*8/n)%8)+8)%8;R(d,8+o,10+r)}
+ if(tip==="ball"){R(b,9,20,6,1);R(b,10,21,4,1)}else if(tip==="bull"){R(b,9,20,6,1)}else R(b,8,20,8,1);
+ if(tip==="rough")for(let r=0;r<10;r+=2){R(K,8,10+r);R(K,15,11+r)}};
+SF.chamfer=()=>{const[b,d,h]=COAT.carbide;R(b,9,1,6,11);R(h,10,1,1,11);R(b,6,12,12,3);R(b,7,15,10,1);R(b,8,16,8,1);R(b,9,17,6,1);R(b,10,18,4,1);R(b,11,19,2,1);R(d,6+(Math.floor(SP)%12),12,1,3);R(d,11,15,1,3)};
+SF.spot=()=>{const[b,d,h]=COAT.carbide;R(b,8,3,8,10);R(h,9,3,1,10);R(b,8,13,8,5);for(let r=0;r<5;r++){R(d,8+((r+Math.floor(SP))%8),13+r);R(d,8+((r+Math.floor(SP)+4)%8),13+r)}R(b,9,18,6,1);R(b,10,19,4,1);R(b,11,20,2,1)};
+SF.drill=()=>{const[b,d,h]=COAT.tin;R(b,10,1,4,8);R(h,11,1,1,8);R(b,10,9,4,11);for(let r=0;r<11;r++)R(d,10+((r+Math.floor(SP))%4),9+r);R(b,11,20,2,1)};
+SF.cdrill=()=>{const[b,d,h]=COAT.hss;R(b,11,2,2,2);R(b,10,4,4,2);R(b,7,6,10,12);R(h,8,6,1,12);R(d,7,11,10,1);R(b,10,18,4,2);R(b,11,20,2,2)};
+SF.engrave=()=>{const[b,d,h]=COAT.carbide;R(b,9,1,6,11);R(h,10,1,1,11);R(b,9,12,6,1);R(b,10,13,4,2);R(b,11,15,2,3);R(b,11,18,1,3);R(d,12,12,2,3)};
+SF.thread=()=>{const[b,d,h]=COAT.carbide;R(b,9,1,6,10);R(h,10,1,1,10);R(b,10,11,4,2);for(let r=0;r<8;r++){if(r%2)R(d,8,13+r,8,1);else R(b,7,13+r,10,1)}};
+SF.tap=()=>{const[b,d,h]=COAT.hss;R(S1,10,1,4,3);R(b,10,4,4,6);R(h,11,4,1,6);for(let r=0;r<10;r++){if(r%2)R(d,8,10+r,8,1);else R(b,7,10+r,10,1)}R(d,11,10,1,10);R(b,9,20,6,1);R(b,10,21,4,1)};
+SF.ream=()=>{const[b,d,h]=COAT.hss;R(b,9,1,6,9);R(h,10,1,1,9);R(b,8,10,8,11);const o=Math.floor(SP)%2;R(d,9+o,10,1,11);R(d,12+o,10,1,11);R(b,9,21,6,1)};
+SF.cbore=()=>{const[b,d,h]=COAT.hss;R(b,9,1,6,10);R(h,10,1,1,10);R(b,6,11,12,6);for(let r=0;r<6;r++)R(d,6+((r+Math.floor(SP))%12),11+r);R(S4,10,17,4,5)};
+SF.csink=()=>{const[b,d,h]=COAT.hss;R(b,9,1,6,11);R(h,10,1,1,11);[[5,14],[6,12],[7,10],[8,8],[9,6],[10,4],[11,2]].forEach(([x,w],i)=>R(b,x,12+i,w,1));R(d,10,12,1,4);R(d,13,13,1,3)};
+SF.fly=()=>{R(S4,9,1,6,6);R(S5,10,1,1,6);R(S2,2,7,20,5);R(S3,2,7,20,1);R(K,15,9);const L=Math.floor(SP/4)%2===1,bx=L?4:18;R(COAT.tin[0],bx,12,2,4);R(COAT.tin[2],bx,12,1,4)};
+SF.face=()=>{R(S4,9,1,6,5);R(S5,10,1,1,5);R(S1,3,6,18,9);R(S2,3,6,18,1);const o=Math.floor(SP)%3;[3,10,16].forEach(x=>R(COAT.tin[0],x+o,13,3,3))};
+function tts(){R(S4,9,1,6,6);R(S5,10,1,1,6)}
+SF.h=p=>{const t=p[1];
+ if(t==="er"){tts();R(S1,6,7,12,3);R(S2,6,8,12,1);R(S3,7,10,10,5);R(S4,8,10,1,5);R(S2,6,15,12,4);R(S1,9,15,1,4);R(S1,14,15,1,4);R(S3,7,15,1,4);R(COAT.carbide[0],9,19,6,4)}
+ else if(t==="set"){tts();R(S1,6,7,12,3);R(S2,6,8,12,1);R(S3,6,10,12,10);R(S4,7,10,1,10);R(S1,18,13,2,3);R(COAT.carbide[0],9,20,6,3)}
+ else if(t==="chuck"){tts();R(S1,7,7,10,2);R(S3,5,9,14,8);for(let x=6;x<18;x+=2)R(S2,x,10,1,6);R(S3,7,17,10,2);R(S3,9,19,6,1);R(S1,10,20,1,2);R(S1,13,20,1,2);R(S1,11,21,2,1)}
+ else if(t==="shell"){tts();R(S1,6,7,12,3);R(S3,8,10,8,3);R(S1,3,13,18,6);R(S2,3,13,18,1);[3,10,18].forEach(x=>R(COAT.tin[0],x,17,3,3));R(S4,10,19,4,1)}
+ else if(t==="collet"){R(S3,9,2,6,4);R(S2,9,3,6,1);R(S4,9,6,6,12);R(S5,10,6,1,12);R(S4,8,16,8,4);R(S2,11,12,1,8);R(S2,13,12,1,8)}};
+SF.atc=()=>{R(S1,4,4,16,16);R(S1,2,8,20,8);R(S1,8,2,8,20);R(S2,9,9,6,6);[[11,3],[16,5],[18,10],[16,16],[11,18],[6,16],[4,10],[6,5]].forEach(([x,y])=>R(S4,x,y,2,2));R(RED,11,11,2,2)};
+SF.drawbar=()=>{R(S1,9,1,6,3);R(S3,11,4,2,17);for(let y=16;y<21;y+=2)R(S2,11,y,2,1)};
+SF.vise=()=>{R(VBd,1,16,22,5);R(VB,2,13,20,3);R(VB,2,5,5,8);R(S4,6,6,1,7);R(VB,15,6,5,7);R(S4,14,7,1,6);R(S4,20,9,3,2);R(S1,22,6,1,8)};
+SF.para=()=>{R(S4,2,7,20,3);R(S5,2,7,20,1);R(S4,2,14,20,3);R(S5,2,14,20,1)};
+SF.softjaw=()=>{const a=MAT.al[0];R(a,1,6,7,12);R(a,16,6,7,12);R(S5,1,6,7,1);R(S5,16,6,7,1);const br=MAT.brass[0];R(br,9,8,6,8);R(br,8,9,8,6);R("#f0c76a",10,9,2,1)};
+SF.hardjaw=()=>{R(S1,1,6,7,12);R(S1,16,6,7,12);for(let y=6;y<18;y+=2){R(S3,7,y);R(S3,16,y)}};
+SF.strap=()=>{R(S1,0,20,24,3);R(MAT.al[0],2,15,9,5);R(S2,16,17,6,3);R(S2,18,14,4,3);R(S2,20,11,2,3);R(S3,4,11,17,3);R(S1,10,12,6,1);R(S4,12,5,2,15);R(S2,11,8,4,3)};
+SF.stop=()=>{R(VB,1,12,8,10);R(S2,2,4,16,3);R(S3,16,4,3,12);R(S4,16,15,3,2);R(RED,3,1,4,3)};
+SF.hammer=p=>{if(p[1]==="steel"){R("#9a6a3e",11,10,3,13);R(S3,4,3,16,6);R(S4,4,3,16,1)}else{R("#2a2f40",11,10,3,13);R("#1a1d28",11,17,3,6);R(ORG,3,3,18,7);R(YEL,3,3,3,7);R(YEL,18,3,3,7);R("#f6a868",6,4,12,1)}};
+SF.fixture=()=>{R(S3,1,3,22,18);R(S4,1,3,22,1);for(let x=3;x<22;x+=4)for(let y=6;y<20;y+=4)R(S1,x,y);R(S5,5,9,2,2);R(S5,17,13,2,2)};
+SF.sacr=()=>{R("#9a7650",1,12,22,8);[[3,14],[8,17],[13,15],[18,18],[20,13],[6,19]].forEach(([x,y])=>R("#7c5d3e",x,y));R(MAT.al[0],4,8,16,4);R(S5,4,8,16,1)};
+SF.tabs=()=>{const a=MAT.delrin[0];R(a,1,3,22,18);R(K,5,6,14,1);R(K,5,17,14,1);R(K,5,6,1,12);R(K,18,6,1,12);R(a,11,6,2,1);R(a,11,17,2,1);R(a,5,11,1,2);R(a,18,11,1,2)};
+SF.stepblk=()=>{R(S2,3,16,18,5);R(S2,7,12,14,4);R(S2,11,8,10,4);R(S2,15,4,6,4);[[3,16,4],[7,12,4],[11,8,4],[15,4,6]].forEach(([x,y,w])=>R(S3,x,y,w,1))};
+SF.stud=()=>{R(S3,11,1,2,22);for(let y=2;y<23;y+=2)R(S2,11,y,2,1);R(S2,8,6,8,3);R(S3,8,6,8,1)};
+SF.tnut=()=>{R(S4,11,1,2,8);for(let y=2;y<9;y+=2)R(S3,11,y,2,1);R(S2,8,9,8,5);R(S2,4,14,16,5);R(S3,4,14,16,1)};
+SF.dowel=()=>{R(S4,10,3,4,18);R(S5,10,3,1,18);R(S3,11,2,2,1);R(S3,11,21,2,1)};
+SF.gauge=()=>{R(S4,3,15,18,6);R(S5,3,15,18,1);R(S4,5,10,14,5);R(S5,5,10,14,1);R(S4,7,5,10,5);R(S5,7,5,10,1)};
+SF.cal=()=>{R(S4,1,7,22,3);for(let x=12;x<22;x+=2)R(S2,x,8);R(S4,2,10,3,9);R(S4,2,19,2,2);R(S4,8,10,3,7);R(S4,9,17,2,2);R(S4,2,3,2,4);R(S4,9,4,2,3);R("#2a2f40",11,10,9,6);R("#9fe0a0",12,11,7,3);R("#1f4f2a",13,12,5,1)};
+SF.mic=()=>{const F="#596079";R(F,3,6,3,12);R(F,3,15,11,4);R(F,11,11,4,8);R(S5,6,8,2,3);R(S5,8,9,4,2);R(S4,12,8,5,4);R(K,13,10,4,1);R(S3,17,7,4,6);R(S2,18,7,1,6);R(S2,20,7,1,6);R(S2,21,8,2,4)};
+SF.dti=()=>{R(S5,7,3,10,10);R(S5,6,4,12,8);R(S2,12,3);R(S2,6,8);R(S2,17,8);R(RED,12,5,1,4);R(K,11,8,2,2);R(S2,9,13,6,3);R(S3,8,16,2,2);R(S3,6,18,2,2);R(S3,4,20,2,1);R(RED,2,20,2,2)};
+SF.dial=()=>{R(S5,7,3,10,10);R(S5,6,4,12,8);R(S2,12,3);R(RED,12,5,1,4);R(K,11,8,2,2);R(S2,3,7,3,3);R(S4,11,13,2,7);R(S3,10,13,4,2);R(K,11,20,2,2)};
+SF.edge=()=>{R(S4,9,1,6,12);R(S5,10,1,1,12);R(K,10,13,4,1);R(S4,10,14,4,4);R(S4,11,18,2,4)};
+SF.probe=()=>{R(S1,8,1,8,13);R(S2,9,1,1,13);R(BLU,8,10,8,2);R(S4,11,14,2,6);R(RED,10,20,4,2);R(RED,11,19,2,4);R(REDl,11,20)};
+SF.feeler=()=>{R(S4,6,5,16,2);R(S3,6,8,17,2);R(S4,6,11,17,2);R(S3,6,14,16,2);R(S4,6,17,14,2);R(VB,2,4,6,16);R(S4,4,11,2,2)};
+SF.hole=()=>{R(S3,10,1,4,13);for(let y=2;y<13;y+=2)R(S2,10,y,4,1);R(S4,11,14,2,2);R(S4,9,16,6,5);R(S4,10,21,4,1);R(S1,12,16,1,6)};
+SF.tele=()=>{R(S3,11,8,2,15);for(let y=10;y<22;y+=2)R(S2,11,y,2,1);R(S4,2,4,20,3);R(S5,2,4,20,1);R(S2,10,3,4,5)};
+SF.bore=()=>{R(S5,7,1,10,8);R(RED,12,2,1,4);R(K,11,5,2,2);R(S3,11,9,2,10);R(S2,9,19,6,3);R(S4,15,20,2,1)};
+SF.height=()=>{R(S1,2,19,20,4);R(S3,5,2,3,17);for(let y=3;y<18;y+=2)R(S2,6,y);R(S2,7,9,6,5);R("#9fe0a0",8,10,4,2);R(S4,13,11,8,2);R(S5,20,11,2,3)};
+SF.setter=()=>{R(S1,4,13,16,8);R(S2,8,8,8,5);R(S4,9,5,6,3);R(S5,9,5,6,1);R(GRN,16,15,2,2);R(S0,0,17,4,1)};
+SF.plate=()=>{R("#2f3342",1,8,22,12);R("#4a4f63",1,8,22,1);[[4,11],[9,14],[15,12],[19,16],[6,17],[12,18],[17,10]].forEach(([x,y])=>R("#4a4f63",x,y))};
+SF.b=p=>{const t=p[1];
+ if(t==="estop"){R(YEL,3,13,18,8);R(YEL,5,12,14,1);R(RED,8,11,8,3);R(RED,4,5,16,7);R(RED,6,4,12,1);R(REDl,7,5,6,1)}
+ else if(t==="hold"){R(YEL,3,3,18,18);R(K,8,7,3,10);R(K,13,7,3,10)}
+ else if(t==="start"){R(GRN,3,3,18,18);for(let r=0;r<11;r++)R("#ffffff",9,7+r,r<=5?r+1:11-r,1)}
+ else if(t==="stop"){R(RED,3,3,18,18);R("#ffffff",8,8,8,8)}
+ else if(t==="ovr"){R(S1,5,3,14,18);R(S1,3,5,18,14);R(S2,7,6,10,12);R(S2,6,7,12,10);R(YEL,11,5,2,6);[[1,15],[1,8],[6,1],[16,1],[21,8],[21,15]].forEach(([x,y])=>R(YEL,x,y,2,1))}
+ else if(t==="single"){R(BLU,3,3,18,18);R("#ffffff",11,7,2,10);R("#ffffff",9,8,2,2);R("#ffffff",9,16,6,2)}
+ else if(t==="power"){R(S1,4,3,16,18);R(RED,8,6,8,12);R(REDl,8,6,8,2);R("#ffffff",11,12,2,4)}};
+SF.tach=()=>{R(S1,2,5,20,15);R(S5,4,7,16,11);R(RED,16,8,3,2);[[6,15],[6,10],[9,8],[12,7]].forEach(([x,y])=>R(K,x,y));R(K,11,14,2,2);R(K,13,12,2,2);R(K,15,10,2,2);R(S2,8,18,8,2)};
+SF.feed=()=>{R(CYA,3,10,12,4);for(let i=0;i<5;i++)R(CYA,15+i,7+i,1,10-2*i);R(S3,1,6,7,1);R(S3,0,17,7,1)};
+SF.ok=()=>{R(GRN,4,3,16,18);R(GRN,3,4,18,16);[[6,12],[7,13],[8,14],[9,15],[10,14],[11,13],[12,12],[13,11],[14,10],[15,9],[16,8]].forEach(([x,y])=>R("#ffffff",x,y,2,2))};
+SF.no=()=>{R(RED,7,2,10,3);R(RED,7,19,10,3);R(RED,2,7,3,10);R(RED,19,7,3,10);R(RED,4,4,4,4);R(RED,16,4,4,4);R(RED,4,16,4,4);R(RED,16,16,4,4);for(let i=0;i<12;i++)R(RED,6+i,6+i,2,2)};
+function tri(c){for(let r=0;r<18;r++){const w=2+r;R(c,12-(w>>1),3+r,w,1)}R(K,11,9,2,6);R(K,11,17,2,2)}
+SF.care=()=>tri(YEL);SF.warn=()=>tri(ORG);
+SF.bulb=()=>{R(YEL,7,2,10,10);R(YEL,6,4,12,6);R("#fff6c8",9,4,2,2);R(S3,9,12,6,2);R(S2,9,14,6,2);R(S3,10,16,4,1);R(YEL,1,6,3,1);R(YEL,20,6,3,1);R(YEL,3,1,1,2);R(YEL,20,1,1,2)};
+SF.wash=()=>{R(SKIN,6,10,10,9);R(SKIN,6,5,2,6);R(SKIN,9,4,2,7);R(SKIN,12,5,2,6);R(SKIN,15,7,2,5);R(SKIN,3,12,3,3);R(CYA,19,3,2,3);R(CYA,20,9,2,3);R(CYA,18,14,2,3);R("#ffffff",2,4,2,2);R("#ffffff",4,1,1,1)};
+SF.broom=()=>{R("#9a6a3e",14,1,2,12);R(RED,8,12,14,2);R(YEL,8,14,14,7);for(let x=9;x<22;x+=2)R(YELd,x,15,1,6);R(S4,1,20,2,2);R(S4,4,21,2,1)};
+SF.coolant=()=>{R(BLU,2,3,4,4);R(BLU,5,6,4,4);R(BLU,8,9,4,4);R(YEL,11,12,3,3);R(CYA,14,15,2,2);R(CYA,17,17,2,2);R(CYA,14,19,2,2);R(CYA,19,20,2,2)};
+SF.air=()=>{R(MAT.al[0],2,16,20,5);R(S5,2,16,20,1);R(COAT.carbide[0],10,1,4,8);for(let x=2;x<22;x+=3)R(CYA,x,12,2,1)};
+SF.home=()=>{for(let r=0;r<7;r++)R(YEL,11-r,3+r,2+2*r,1);R(S4,6,10,12,10);R(S1,10,14,4,6)};
+SF.book=()=>{R(VB,4,3,16,18);R(VBd,4,3,3,18);R(S5,19,4,2,16);R(YEL,9,7,8,2);R(S4,9,11,8,1);R(S4,9,13,6,1)};
+SF.path=()=>{R(S0,1,3,22,18);const c=CYA;R(c,3,6,16,1);R(c,18,6,1,4);R(c,5,9,14,1);R(c,5,9,1,4);R(c,5,12,14,1);R(c,18,12,1,4);R(c,5,15,14,1);R(c,5,15,1,3);R(c,5,17,16,1)};
+SF.pp=()=>{R(S1,2,3,20,14);R("#0b1a10",3,4,18,11);R("#6dff8a",4,6,10,1);R("#6dff8a",4,9,13,1);R("#6dff8a",4,12,7,1);R(S2,10,17,4,3);R(S2,7,20,10,2)};
+SF.mat=p=>{const[c,l]=MAT[p[1]]||MAT.al,lt=shade(c,28),dk=shade(c,-42);R(c,4,10,14,11);for(let j=0;j<4;j++)R(lt,4+(4-j),6+j,14,1);for(let k=0;k<4;k++)R(dk,18+k,9-k,1,11);T(l,4+((14-textW(l))>>1),13,lum(c)<110?"#ffffff":"#1a1d28")};
+SF.lead=()=>{R("#3f5a8a",3,19,18,5);R("#2b3f63",11,19,2,5);R(SKIN,10,17,4,3);R(SKIN,6,8,12,10);R(SKIN,5,11,1,3);R(SKIN,18,11,1,3);R(RED,5,3,14,5);R("#b8342c",4,7,16,1);R(S5,10,4,4,2);R(K,6,10,12,1);R(CYA,7,11,4,2);R(CYA,13,11,4,2);R("#c98f62",11,13,2,2);R("#6b4a2e",6,15,12,3);R("#6b4a2e",8,18,8,1);R("#3a2618",10,16,4,1)};
+SF.mate=()=>{const sk="#c68a5e",hr="#2b1d14";R("#2f8a49",4,19,16,5);R(sk,10,17,4,3);R(hr,5,3,14,6);R(hr,5,7,2,11);R(hr,17,7,2,11);R(sk,7,7,10,11);R(hr,7,7,10,2);R(K,7,11,10,1);R(CYA,7,12,4,2);R(CYA,13,12,4,2);R("#7a3a2a",10,16,4,1)};
+SF.ticket=()=>{R("#f1efe4",4,2,16,20);R("#cfcab8",16,2,4,4);[6,9,12].forEach(y=>R(S3,6,y,11,1));R(RED,6,15,13,6);T("JOB",7,16,"#ffffff")};
+
+function spr(ctx,key,x,y,s=1,outline=true){if(!key)return;const p=key.split("-"),fn=SF[p[0]];if(!fn)return;g=ctx;OX=x;OY=y;S=s;if(outline){OUT=1;fn(p)}OUT=0;fn(p)}
+function tile(key,size=24){const c=document.createElement("canvas");c.width=size;c.height=size;c.setAttribute("aria-hidden","true");const keep=SP;SP=0;spr(c.getContext("2d"),key,0,0,1,true);SP=keep;return c}
+function playerSprite(f){const hr="#3a2618",pa="#2a2f40",bo="#1a1d28";
+ R(hr,3,0,6,2);R(hr,2,1,1,3);R(hr,9,1,1,3);R(SKIN,3,2,6,4);R(CYA,3,3,6,1);R(SKIN,5,6,2,1);
+ R(BLU,2,7,8,6);R(BLU,1,7,1,4);R(BLU,10,7,1,4);R(SKIN,1,11,1,1);R(SKIN,10,11,1,1);R(YEL,2,9,8,1);
+ R(pa,3,13,6,3);if(f){R(pa,3,16,2,2);R(pa,7,16,2,1);R(bo,2,18,3,2);R(bo,7,17,3,2)}else{R(pa,3,16,2,2);R(pa,7,16,2,2);R(bo,2,18,3,2);R(bo,7,18,3,2)}}
+function drawPlayer(ctx,x,y,s,f){g=ctx;OX=x;OY=y;S=s;OUT=1;playerSprite(f);OUT=0;playerSprite(f)}
+
+/* ============ TERM → SPRITE ============ */
+const KEYWORDS=[["fly cutter","fly"],["ball end","em-ball-carbide-high-2"],["spot drill","spot"],["center drill","cdrill"],["engrav","engrave"],["thread mill","thread"],["ream","ream"],["counterbore","cbore"],["countersink","csink"],["chamfer","chamfer"],["roughing","em-rough-carbide-std-4"],["bullnose","em-bull-carbide-high-3"],["flat end","em-flat-carbide-high-3"],["flat (square)","em-flat-carbide-high-3"],["set-screw","h-set"],["drill chuck","h-chuck"],["er collet","h-er"],["shell mill","h-shell"],["vise stop","stop"],["strap","strap"],["soft jaw","softjaw"],["hard jaw","hardjaw"],["parallel","para"],["feeler","feeler"],["gauge block","gauge-blk"],["step block","stepblk"],["dead blow","hammer"],["edge finder","edge"],["probe","probe"],["dial test","dti"],["dial indicator","dial"],["micrometer","mic"],["caliper","cal"],["small hole","hole"],["tts","h-er"],["automatic tool","atc"],["r8 collet","h-collet"],["face mill","face"],["tap","tap"],["drill","drill"],["e-stop","b-estop"],["feed hold","b-hold"],["single block","b-single"],["optional stop","b-hold"],["power off","b-power"],["override","b-ovr"],["peck","drill"],["adaptive","path"],["climb","path"],["6061","mat-al"],["magnesium","mat-mg"],["pvc","mat-pvc"],["g10","mat-g10"],["tool setter","setter"],["stop","b-stop"],["vise","vise"]];
+const TERM_SPR={"3-axis mill":"pp","Spindle":"h-collet","R8 taper":"h-collet","Drawbar":"drawbar","Power drawbar":"drawbar","ATC (automatic tool changer)":"atc","Enclosure":"pp","Flood coolant":"coolant","PathPilot":"pp","T-slot table":"tnut","Jog":"b-ovr","E-stop":"b-estop","Spindle nose":"h-er","TTS (Tormach Tooling System)":"h-er","TTS R8 collet":"h-collet","Tool holder":"h-er","ER collet":"h-collet","Weldon flat":"h-set","Jacobs taper":"h-chuck","Indexable insert":"face","Runout":"h-er","Stickout":"h-set","Tool table":"book","Tool length offset":"setter","Height gauge":"height","Tool setter (ETS)":"setter","Twist drill":"drill","Spiral point tap":"tap","Spiral flute tap":"tap","Form (roll) tap":"tap","Flute":"em-flat-carbide-high-3","Helix angle":"em-flat-zrn-high-3","Center cutting":"em-flat-carbide-std-4","HSS (high-speed steel)":"em-flat-hss-std-2","Carbide":"em-flat-carbide-std-4","Coating":"em-flat-tin-std-4","Corner radius":"em-bull-carbide-high-3","Fixed jaw":"vise","Moving jaw":"vise","T-slot nut":"tnut","Stud":"stud","Fixture plate":"fixture","Dowel pin":"dowel","Sacrificial plate":"sacr","Indicating the vise":"dti","Tabs":"tabs","Setup":"vise","Telescoping gauge":"tele","Dial bore gauge":"bore","Surface plate":"plate","Gauge blocks":"gauge-blk","Resolution vs accuracy":"bulb","10:1 rule":"mic","Cosine error":"dti","Referencing (homing)":"home","Machine coordinates":"home","Work offset (G54)":"probe","WCS":"probe","Cycle start":"b-start","Stop":"b-stop","Spindle override":"b-ovr","Max velocity override":"b-ovr","Air cut":"air","G-code":"pp","M6":"h-er","Toolpath":"path","Conventional milling":"path","SFM":"tach","RPM":"tach","Chipload":"feed","Feed rate":"feed","DOC / WOC":"path","Chatter":"warn","Built-up edge":"em-flat-carbide-high-3","Crash":"warn","6061 aluminum":"mat-al","7075 aluminum":"mat-7075","Delrin (acetal)":"mat-delrin","Free-machining brass (360)":"mat-brass","303 vs 304 stainless":"mat-304","Work hardening":"mat-304","Cold-rolled steel":"mat-crs","Titanium":"mat-ti","Magnesium":"mat-mg","PVC":"mat-pvc","Carbon fiber / G10":"mat-cf","Ways":"b-ovr","Ballscrew":"stud","Travel":"path","4th / 5th axis":"atc"};
+const CAT_SPR={mach:"pp",hold:"h-er",tool:"em-flat-carbide-high-3",work:"vise",meas:"cal",ops:"path",mat:"mat-al"};
+function sprFor(label){if(TERM_SPR[label])return TERM_SPR[label];const l=label.toLowerCase();for(const[w,s]of KEYWORDS)if(l.includes(w))return s;return null}
+function termSprite(t){return TERM_SPR[t.t]||sprFor(t.t)||CAT_SPR[t.c]}
+
+/* ============ SAVE ============ */
+const SAVE={get(k,d){try{const v=localStorage.getItem("cq:"+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("cq:"+k,JSON.stringify(v))}catch(e){}}};
+let prog=SAVE.get("prog",{});let cards=new Set(SAVE.get("cards",[]));let rushBest=SAVE.get("rush",0);let sound=SAVE.get("snd",true);
+function unlock(names){let n=0;(names||[]).forEach(x=>{if(TERM_BY[x]&&!cards.has(x)){cards.add(x);n++}});if(n)SAVE.set("cards",[...cards]);return n}
+
+/* ============ SOUND ============ */
+let AC=null;
+function tone(f,d,type="square",v=.035,delay=0){if(!sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),gn=AC.createGain(),t=AC.currentTime+delay;o.type=type;o.frequency.value=f;gn.gain.setValueAtTime(v,t);gn.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(gn).connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
+const sfx={good:()=>{tone(660,.08);tone(990,.12,"square",.035,.08)},bad:()=>{tone(170,.28,"sawtooth",.05);tone(120,.3,"sawtooth",.04,.12)},click:()=>tone(520,.04,"square",.025),done:()=>[523,659,784,1046].forEach((f,i)=>tone(f,.13,"square",.035,i*.1)),tick:()=>tone(880,.03,"square",.02)};
+
+/* ============ DOM HELPERS ============ */
+const $=s=>document.querySelector(s);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function el(tag,attrs={},...kids){const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(v==null)continue;if(k==="class")e.className=v;else if(k==="text")e.textContent=v;else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v)}for(const c of kids)if(c!=null&&c!==false)e.append(c);return e}
+const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const SPEAK={L:["lead","SHOP LEAD"],M:["mate","TEAMMATE"],T:["ticket","TICKET"],P:["pp","PATHPILOT"]};
+let typeTimer=null;
+function dialog(portrait,who,text){
+  const say=el("div",{class:"say"});const box=el("div",{class:"dlg",title:"Click to finish the line"},tile(portrait),el("div",{},el("div",{class:"who",text:who}),say));
+  clearInterval(typeTimer);
+  if(RM){say.textContent=text}else{let i=0;const caret=el("span",{class:"caret"});const step=Math.max(1,Math.ceil(text.length/45));
+    const fin=()=>{clearInterval(typeTimer);say.textContent=text};
+    typeTimer=setInterval(()=>{i+=step;if(i>=text.length){fin();return}say.textContent=text.slice(0,i);say.append(caret);if(i%6<step)sfx.tick()},18);
+    box.addEventListener("click",fin)}
+  return box}
+const panel=$("#panel");
+function setPanel(...nodes){panel.innerHTML="";nodes.forEach(n=>n&&panel.append(n))}
+function pbtn(text,fn,primary=true){return el("button",{class:primary?"pbtn":"sbtn",type:"button",text,onclick:()=>{sfx.click();fn()},"data-primary":primary?"1":null})}
+
+/* ============ GAME STATE ============ */
+const G={mode:"title",L:null,li:0,ji:0,si:0,hearts:5,score:0,misses:0,streak:0,missed:[],locked:false,mapSel:0,px:150,walkTo:null,r:null,bookCat:"all",bookAll:false,failed:false};
+let SC={};
+function resetScene(mat){SC={hold:null,part:false,para:false,sacr:false,tabs:false,tool:null,holder:null,probe:false,rpm:0,feed:0,pp:"READY",coolant:false,run:null,estop:false,mat:mat||"al",hx:0,hz:-40,flash:0,flashC:RED,shake:0,alarm:0}}
+resetScene();
+let parts=[],bubbles=[];
+function applyFx(fx){if(!fx)return;for(const[k,v]of Object.entries(fx)){if(k==="run")SC.run=v?{type:v,t0:time}:null;else SC[k]=v}}
+const curJob=()=>G.L.jobs[G.ji];const curStep=()=>curJob().steps[G.si];
+const totalSteps=L=>L.jobs.reduce((a,j)=>a+j.steps.length,0);
+
+/* ============ SCREENS ============ */
+function toTitle(){G.mode="title";resetScene("al");applyFx({hold:"vise",part:true,para:true,tool:"em-flat-tin-high-3",holder:"h-er",coolant:true,run:"cut",rpm:6112,feed:55,pp:"RUN"});
+  setPanel(el("section",{class:"box"},
+   dialog("lead","SHOP LEAD","Welcome to the shop. Each stock rack out there is a shift, and each ticket is a real job on our 1100M: hold the part, pick the bit for that metal, work out the speeds, run it and measure it. You get five hearts per shift."),
+   el("div",{class:"acts"},pbtn("CLOCK IN ▶",toMap),pbtn("CRIB RUSH",startRush,false),pbtn("CRIB BOOK",toBook,false)),
+   el("p",{class:"keys",text:"Keys: 1–4 picks an answer · Enter continues · Esc goes back to the racks. Check shop-specific rules against "+SHOP.manual+"."})))}
+
+function toMap(){G.mode="map";G.walkTo=null;resetScene();
+  const grid=el("div",{class:"levels"});
+  LEVELS.forEach((L,i)=>{const p=prog[L.id]||{};const b=el("button",{class:"lvl"+(i===G.mapSel?" sel":""),type:"button",onclick:()=>{sfx.click();goRack(i)}},
+    tile("mat-"+L.mat),el("div",{class:"nm",text:L.name}),el("div",{class:"sub",text:`${L.jobs.length} ticket${L.jobs.length>1?"s":""} · ${totalSteps(L)} steps${p.best?" · best "+p.best:""}`}),
+    el("div",{class:"stars"},...[0,1,2].map(k=>el("i",{class:"star"+(k<(p.stars||0)?" on":"")}))));grid.append(b)});
+  const done=LEVELS.filter(L=>(prog[L.id]||{}).stars).length;
+  setPanel(el("section",{class:"box"},el("div",{class:"crumb"},el("span",{},"STOCK RACKS · ",el("b",{text:done+"/"+LEVELS.length+" CLEARED"})),el("span",{text:"←/→ WALK · ENTER PICKS"})),
+    el("p",{class:"h2",text:"Pick a rack to start a shift"}),
+    el("p",{class:"muted",text:"Every metal wants a different bit, speed and setup. Start with 6061 if you're new; it walks through the whole workflow."}),grid,
+    el("div",{class:"acts"},pbtn(`CRIB RUSH · BEST ${rushBest}`,startRush,false),pbtn(`CRIB BOOK · ${cards.size}/${TERMS.length}`,toBook,false))))}
+function goRack(i){G.mapSel=i;G.walkTo=i;document.querySelectorAll(".lvl").forEach((b,k)=>b.classList.toggle("sel",k===i))}
+
+function startLevel(i){G.li=i;G.L=LEVELS[i];G.mode="job";G.ji=0;G.si=0;G.hearts=5;G.score=0;G.misses=0;G.streak=0;G.missed=[];G.failed=false;parts=[];bubbles=[];resetScene(G.L.mat);jobIntro()}
+function jobIntro(){const J=curJob();resetScene(G.L.mat);parts=[];
+  setPanel(el("section",{class:"box"},el("div",{class:"crumb"},el("span",{},G.L.name.toUpperCase()+" · ",el("b",{text:`TICKET ${G.ji+1}/${G.L.jobs.length}`})),el("span",{text:`${J.steps.length} STEPS`})),
+    dialog("ticket","TICKET #"+J.no,`${J.t}. ${J.d}`),
+    el("div",{class:"acts"},pbtn("START THE JOB ▶",showStep))))}
+function showStep(){const st=curStep(),J=curJob();if(st.pre)applyFx(st.pre);G.locked=false;
+  const idx=st.o.map((_,i)=>i),order=st.fixed?idx:shuffle(idx);const[por,who]=SPEAK[st.s]||SPEAK.L;
+  const opts=el("div",{class:"opts"+(st.o.length===4?" four":"")});
+  order.forEach((oi,n)=>{const[label,key]=st.o[oi];opts.append(el("button",{class:"opt",type:"button","data-i":oi,onclick:()=>answer(oi)},el("span",{class:"k",text:String(n+1)}),key?tile(key):null,el("span",{class:"lbl",text:label})))});
+  setPanel(el("section",{class:"box"},el("div",{class:"crumb"},el("span",{},`#${J.no} · `,el("b",{text:`STEP ${G.si+1}/${J.steps.length}`})),el("span",{text:`SCORE ${G.score}`})),
+    dialog(por,who,st.q),st.f?el("div",{class:"formula",text:st.f}):null,opts,el("div",{id:"fb"})))}
+const GOODW=["CLEAN CUT!","IN TOLERANCE","NICE CHIPS","DIALED IN","SHIP IT","RIGHT ON"];
+function answer(i){if(G.locked)return;G.locked=true;const st=curStep(),a=st.a||0,ok=i===a;
+  document.querySelectorAll("#panel .opt").forEach(b=>{b.disabled=true;const k=+b.dataset.i;if(k===a)b.classList.add("right");else if(k===i)b.classList.add("wrong");else b.classList.add("dim")});
+  const tx=182+SC.hx;
+  if(ok){G.streak++;const pts=100+Math.min(G.streak-1,5)*20;G.score+=pts;sfx.good();bubble("+"+pts,tx,40,GRN);burst(tx,60,GRN,14)}
+  else{G.hearts--;G.misses++;G.streak=0;sfx.bad();if(!RM){SC.shake=.4;SC.flash=.35;SC.flashC=RED}bubble(st.pre&&st.pre.run==="crash"?"CRASH!":pick(["SCRAP!","OOF","NOPE"]),tx,40,RED);G.missed.push({q:st.q,a:st.o[a][0],why:st.why})}
+  const nNew=ok?unlock(st.k):0;
+  applyFx(st.fx);if(st.pre&&st.pre.run&&!(st.fx&&"run" in st.fx))setTimeout(()=>{SC.run=null},900);
+  const last=G.si>=curJob().steps.length-1,dead=G.hearts<=0;
+  const fb=$("#fb");fb.className="fb"+(ok?"":" miss");
+  fb.append(el("h3",{text:ok?pick(GOODW)+(G.streak>2?` · STREAK ${G.streak}`:""):"SCRAP! ANSWER: "+st.o[a][0].toUpperCase()}),el("p",{text:st.why}),
+    nNew?el("p",{class:"muted",text:`+${nNew} new crib card${nNew>1?"s":""} in the Crib Book`}):null,
+    el("div",{class:"acts"},dead?pbtn("SEE THE SHOP LEAD ▶",fail):pbtn(last?"FINISH TICKET ▶":"NEXT ▶",next)));
+  const nb=fb.querySelector(".pbtn");nb.focus({preventScroll:true});nb.scrollIntoView({block:"nearest",behavior:RM?"auto":"smooth"})}
+function next(){G.si++;if(G.si>=curJob().steps.length)jobDone();else showStep()}
+function jobDone(){const J=curJob();G.score+=250;sfx.done();bubble("TICKET DONE",182,34,YEL);burst(182,70,YEL,30);SC.run=null;SC.pp="DONE";
+  const more=G.ji<G.L.jobs.length-1;
+  setPanel(el("section",{class:"box"},el("div",{class:"crumb"},el("span",{},`#${J.no} · `,el("b",{text:"COMPLETE"})),el("span",{text:`SCORE ${G.score}`})),
+    dialog("lead","SHOP LEAD",`Ticket #${J.no} is done and the part's in tolerance. Plus 250 for finishing. ${more?"Next ticket's on the board.":"That's the whole rack. Clock out."}`),
+    el("div",{class:"acts"},pbtn(more?"NEXT TICKET ▶":"CLOCK OUT ▶",()=>{if(more){G.ji++;G.si=0;jobIntro()}else finishLevel()}))))}
+function missedList(){if(!G.missed.length)return null;return el("div",{},el("p",{class:"h2",text:"Review what you missed",style:"margin-bottom:10px"}),el("ul",{class:"missed"},...G.missed.map(m=>el("li",{},el("span",{class:"q",text:m.q}),el("b",{text:m.a}),el("span",{text:m.why})))))}
+function finishLevel(){const L=G.L,stars=G.misses===0?3:G.misses<=2?2:1;const p=prog[L.id]||{};prog[L.id]={stars:Math.max(p.stars||0,stars),best:Math.max(p.best||0,G.score)};SAVE.set("prog",prog);
+  G.mode="result";G.failed=false;G.resStars=stars;G.resT=time;resetScene(L.mat);applyFx({hold:"vise",part:true,para:true});
+  const nxt=G.li<LEVELS.length-1;
+  setPanel(el("section",{class:"box"},el("p",{class:"h2",text:"SHIFT COMPLETE · "+L.name.toUpperCase()}),
+    el("div",{class:"bigstars"},...[0,1,2].map(k=>el("i",{class:"star"+(k<stars?" on":"")}))),
+    el("div",{class:"stat"},el("div",{},el("b",{text:G.score}),el("span",{text:"SCORE"})),el("div",{},el("b",{text:G.misses}),el("span",{text:"MISSES"})),el("div",{},el("b",{text:prog[L.id].best}),el("span",{text:"BEST"})),el("div",{},el("b",{text:cards.size+"/"+TERMS.length}),el("span",{text:"CRIB CARDS"}))),
+    el("p",{class:"muted",text:stars===3?"No misses. That's a clean shift.":stars===2?"Two misses or fewer. Run it again for three stars.":"Go over the misses below, then run the shift again."}),
+    missedList(),
+    el("div",{class:"acts"},nxt?pbtn("NEXT RACK ▶",()=>startLevel(G.li+1)):pbtn("CRIB RUSH ▶",startRush),pbtn("REPLAY",()=>startLevel(G.li),false),pbtn("STOCK RACKS",toMap,false))))}
+function fail(){G.mode="result";G.failed=true;G.resT=time;SC.run=null;SC.alarm=1;
+  setPanel(el("section",{class:"box"},dialog("lead","SHOP LEAD","That's five strikes, so I'm pulling you off the machine for now. Read back through what went wrong, then take the shift again. Everybody scraps parts while they learn."),
+    missedList(),el("div",{class:"acts"},pbtn("TRY THE SHIFT AGAIN ▶",()=>startLevel(G.li)),pbtn("STOCK RACKS",toMap,false))))}
+
+/* ---- Crib Rush: every glossary term and job from the Tool Crib ---- */
+function vocabQ(x){const same=shuffle(TERMS.filter(y=>y.c===x.c&&y.id!==x.id)),other=shuffle(TERMS.filter(y=>y.c!==x.c)),dis=[...same,...other].slice(0,3);
+  if(Math.random()<.5)return{q:"Which term matches this? "+x.d,a:x.t,opts:[x.t,...dis.map(y=>y.t)],why:x.t+": "+x.d,img:true,k:[x.t]};
+  return{q:"What does “"+x.t+"” mean?",a:x.d,opts:[x.d,...dis.map(y=>y.d)],why:x.t+": "+x.d,img:false,k:[x.t]}}
+function startRush(){G.mode="rush";resetScene();parts=[];G.r={score:0,combo:0,left:60,paused:false,over:false,missed:[],n:0,deck:shuffle([...TERMS.map(t=>({t})),...JOBS.map(j=>({j}))])};rushQ()}
+function rushQ(){const r=G.r;if(r.n>=r.deck.length){r.deck=shuffle(r.deck);r.n=0}const it=r.deck[r.n++];
+  const q=it.j?{...it.j,img:true,k:[]}:vocabQ(it.t);r.q=q;r.locked=false;r.paused=false;
+  const opts=el("div",{class:"opts"+(q.img?" four":"")});
+  shuffle(q.opts).forEach((o,n)=>{const key=q.img?sprFor(o):null;opts.append(el("button",{class:"opt"+(key?"":" noimg"),type:"button",onclick:e=>rushAnswer(o,e.currentTarget)},el("span",{class:"k",text:String(n+1)}),key?tile(key):null,el("span",{class:"lbl",text:o})))});
+  setPanel(el("section",{class:"box"},el("div",{class:"crumb"},el("span",{},"CRIB RUSH · ",el("b",{id:"r-time",text:Math.ceil(r.left)+"s"})),el("span",{text:`SCORE ${r.score} · BEST ${rushBest}`})),
+    el("p",{class:"say",text:q.q}),opts,el("div",{id:"fb"})))}
+function rushAnswer(o,btn){const r=G.r;if(r.locked||r.over)return;r.locked=true;const ok=o===r.q.a;
+  document.querySelectorAll("#panel .opt").forEach(b=>{b.disabled=true;const t=b.querySelector(".lbl").textContent;if(t===r.q.a)b.classList.add("right");else if(b===btn)b.classList.add("wrong");else b.classList.add("dim")});
+  if(ok){r.combo++;r.score+=r.combo>=5?2:1;sfx.good();unlock(r.q.k);if(it_isJob(r.q))unlockByLabel(r.q.a);burst(160,80,GRN,16);bubble(r.combo>=5?"+2 COMBO":"+1",160,40,GRN);setTimeout(()=>{if(!r.over)rushQ()},RM?250:420)}
+  else{r.combo=0;r.left=Math.max(0,r.left-5);r.paused=true;sfx.bad();if(!RM){SC.shake=.35;SC.flash=.3;SC.flashC=RED}bubble("-5s",160,40,RED);r.missed.push({q:r.q.q,a:r.q.a,why:r.q.why});
+    const fb=$("#fb");fb.className="fb miss";fb.append(el("h3",{text:"ANSWER: "+(r.q.a.length>60?"SEE BELOW":r.q.a.toUpperCase())}),el("p",{text:r.q.why}),el("div",{class:"acts"},pbtn("NEXT ▶",()=>{if(r.left<=0)endRush();else rushQ()})));
+    const nb=fb.querySelector(".pbtn");nb.focus({preventScroll:true});nb.scrollIntoView({block:"nearest"})}}
+function it_isJob(q){return !q.k||!q.k.length}
+function unlockByLabel(label){const l=label.toLowerCase();const t=TERMS.find(t=>t.t.toLowerCase()===l||l.startsWith(t.t.toLowerCase()));if(t)unlock([t.t])}
+function endRush(){const r=G.r;r.over=true;const nb=r.score>rushBest;if(nb){rushBest=r.score;SAVE.set("rush",rushBest)}sfx.done();G.missed=r.missed;
+  setPanel(el("section",{class:"box"},el("p",{class:"h2",text:"TIME! CRIB RUSH OVER"}),
+    el("div",{class:"stat"},el("div",{},el("b",{text:r.score}),el("span",{text:"SCORE"})),el("div",{},el("b",{text:rushBest}),el("span",{text:nb?"NEW BEST":"BEST"})),el("div",{},el("b",{text:cards.size+"/"+TERMS.length}),el("span",{text:"CRIB CARDS"}))),
+    missedList(),el("div",{class:"acts"},pbtn("RUN IT AGAIN ▶",startRush),pbtn("STOCK RACKS",toMap,false))))}
+
+/* ---- Crib Book ---- */
+function toBook(){G.mode="book";renderBook()}
+function renderBook(){const chips=el("div",{class:"chips"});[["all","ALL"],...Object.entries(CATS).map(([k,v])=>[k,v.toUpperCase()])].forEach(([k,v])=>chips.append(el("button",{class:"chip",type:"button","aria-pressed":String(G.bookCat===k),text:v,onclick:()=>{G.bookCat=k;renderBook()}})));
+  const tg=el("input",{type:"checkbox",id:"b-all"});tg.checked=G.bookAll;tg.addEventListener("change",()=>{G.bookAll=tg.checked;renderBook()});
+  const list=el("div",{class:"book"});
+  for(const c of Object.keys(CATS)){if(G.bookCat!=="all"&&G.bookCat!==c)continue;const items=TERMS.filter(t=>t.c===c),got=items.filter(t=>cards.has(t.t)).length;
+    list.append(el("div",{class:"cat"},el("span",{text:CATS[c].toUpperCase()}),el("small",{text:got+"/"+items.length})));
+    items.forEach(t=>{const has=cards.has(t.t),show=has||G.bookAll;list.append(el("div",{class:"brow"+(has?"":" locked")},tile(termSprite(t)),el("div",{style:"min-width:0"},el("div",{class:"t",text:t.t}),el("div",{class:"d",text:show?t.d:"Not collected yet. Answer it right in a shift or in Crib Rush."}))))})}
+  setPanel(el("section",{class:"box"},el("div",{class:"crumb"},el("span",{},"CRIB BOOK · ",el("b",{text:cards.size+"/"+TERMS.length+" CARDS"})),el("span",{text:"EVERY TERM ON THE PRE-TEST"})),
+    el("p",{class:"muted",text:"Cards unlock when you answer them right. Flip on Show all to study the whole glossary."}),
+    el("div",{class:"acts"},chips),el("label",{class:"toggle",for:"b-all"},tg,el("span",{text:"Show all definitions"})),list,
+    el("div",{class:"acts"},pbtn("STOCK RACKS ▶",toMap),pbtn("CRIB RUSH",startRush,false))))}
+
+/* ============ CANVAS SCENES ============ */
+const cv=$("#scr"),X=cv.getContext("2d");X.imageSmoothingEnabled=false;
+function B(c,x,y,w,h){X.fillStyle=c;X.fillRect(x|0,y|0,w|0,h|0)}
+function txt(str,x,y,c,s=1,sh){if(sh)txt(str,x+s,y+s,sh,s);X.fillStyle=c;let cx=0;for(const ch of String(str).toUpperCase()){const f=FONT[ch];if(f)for(let i=0;i<15;i++)if(f[i]==="1")X.fillRect((x+(cx+i%3)*s)|0,(y+(i/3|0)*s)|0,s,s);cx+=4}}
+function ctxt(str,y,c,s=1,sh){txt(str,160-(textW(str)*s>>1),y,c,s,sh)}
+const HEART=["0110110","1111111","1111111","0111110","0011100","0001000"];
+function heart(x,y,on){HEART.forEach((row,j)=>{for(let i=0;i<7;i++)if(row[i]==="1")B(on?RED:"#3a4060",x+i,y+j,1,1)});if(on)B(REDl,x+1,y+1,1,1)}
+function star(x,y,on,s=1){const P=["00100","01110","11111","01110","01010"];P.forEach((row,j)=>{for(let i=0;i<5;i++)if(row[i]==="1")B(on?YEL:"#3a4060",x+i*s,y+j*s,s,s)})}
+function bubble(text,x,y,c){bubbles.push({text,x,y,c,t0:time})}
+function burst(x,y,c,n){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=40+Math.random()*80;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-40,life:.6+Math.random()*.4,c,s:2,free:true})}}
+
+function wall(){B("#1a1f33",0,0,320,140);for(let x=0;x<320;x+=40)B("#161a2c",x,0,2,140);
+  B("#2a2f45",0,140,320,40);for(let x=0;x<320;x+=16)for(let y=140;y<180;y+=8)if(((x/16)+((y-140)/8))%2)B("#262a3f",x,y,16,8);B("#3a4060",0,140,320,1);
+  for(let x=0;x<320;x+=12)B(x%24?K:YEL,x,172,12,2)}
+function pegboard(x,y,w,h){B("#5a4632",x,y,w,h);B("#6b543c",x,y,w,2);for(let i=x+4;i<x+w;i+=6)for(let j=y+5;j<y+h;j+=6)B("#3e2f22",i,j,1,1)}
+const SX=182;
+function partTop(){if(SC.hold==="vise"||SC.hold==="softjaw")return 76;if(SC.hold==="strap")return SC.sacr?85:88;return 98}
+function tipOff(){if(SC.probe)return 21;const t=SC.tool,h=SC.holder&&SC.holder!=="none";if(t==="fly"||t==="face")return 15;if(!t)return h?16:4;return h?25:20}
+function updateScene(dt){
+  const pt=partTop(),to=tipOff();let tx=0,tz=Math.min(pt-12-62-to,-12);const run=SC.run&&!SC.estop?SC.run:null;let spawn=0;
+  if(run){const tt=time-run.t0;
+    if(run.type==="air"){tx=Math.sin(tt*1.8)*14;tz=pt-8-62-to}
+    else if(run.type==="cut"){tx=Math.sin(tt*1.5)*14;tz=pt+3-62-to;spawn=1}
+    else if(run.type==="chatter"){tx=Math.sin(tt*1.5)*12+(Math.random()-.5)*3;tz=pt+3-62-to+(Math.random()-.5)*2;spawn=1;if(Math.random()<dt*1.5)bubble("SCREECH",SX+tx+20,50,ORG);if(!RM)SC.shake=Math.max(SC.shake,.05)}
+    else if(run.type==="drill"){const holes=[-12,-4,4,12],ph=(tt%1.4)/1.4;tx=holes[Math.floor(tt/1.4)%4];const d=ph<.15?0:ph<.75?(ph-.15)/.6*9:9*(1-(ph-.75)/.25);tz=pt-5-62-to+d;if(d>5)spawn=1}
+    else if(run.type==="crash"){const k=Math.min(1,tt/1.6);tx=-24*k;tz=pt+6-62-to;SC.alarm=1;if(tt>1.4&&Math.random()<.6)spawn=2}}
+  else{SC.alarm=SC.estop?1:0}
+  const k=Math.min(1,dt*(run&&run.type==="drill"?12:6));SC.hx+=(tx-SC.hx)*k;SC.hz+=(tz-SC.hz)*k;
+  const cx=SX+SC.hx,tipY=62+SC.hz+to;SC.tipX=cx;SC.tipY=tipY;
+  if(spawn&&!SC.probe&&SC.tool){const m=spawn===2?YEL:(MAT[SC.mat]||MAT.al)[0];const n=Math.random()<.7?(spawn===2?3:1):0;for(let i=0;i<n;i++)parts.push({x:cx+(Math.random()-.5)*6,y:tipY,vx:(Math.random()-.5)*120,vy:-40-Math.random()*70,life:.7,c:m,s:Math.random()<.3?2:1})}
+  if(run&&SC.coolant&&run.type!=="air"&&Math.random()<.8)parts.push({x:cx-16,y:62+SC.hz,vx:(cx-(cx-16))*3+(Math.random()-.5)*10,vy:(tipY-(62+SC.hz))*3,life:.35,c:CYA,s:1})}
+function drawMill(){
+  const spinning=SC.run&&!SC.estop;SP=spinning?time*14:0;
+  B(K,116,116,132,32);B("#2c3246",118,118,128,28);B("#353c55",118,118,128,2);B("#20253a",181,120,2,26);B(S3,172,128,2,6);B(S3,190,128,2,6);B(K,118,146,12,4);B(K,234,146,12,4);
+  B(K,108,22,148,96);B("#c9ced8",110,24,144,92);B("#e1e5ec",110,24,144,2);B("#2a2f40",110,24,144,10);txt("1100M",116,27,"#e6ecf5");txt(SHOP.name,250-textW(SHOP.name),27,YEL);
+  B("#a9b0bd",110,112,144,4);
+  B("#3a4052",118,38,128,74);B("#0f1a24",120,40,124,70);
+  X.save();X.beginPath();X.rect(120,40,124,70);X.clip();
+  B("#1b2632",192,40,20,70);B("#223040",194,40,2,70);
+  B("#4a5266",124,98,116,8);B("#7d879c",124,98,116,1);for(const x of[134,152,170,188,206,224])B("#2a3040",x,98,4,2);B("#363d52",138,106,88,4);
+  drawHold();
+  const cx=(SX+SC.hx)|0,hz=SC.hz|0,ny=62+hz;
+  B(BLU,cx-20,30+hz,3,24);B(BLU,cx-19,54+hz,3,4);B(YEL,cx-18,58+hz,3,3);
+  if(SC.probe)spr(X,"probe",cx-12,ny-1);
+  else{const t=SC.tool,h=SC.holder&&SC.holder!=="none"?SC.holder:null;
+    if(t==="fly"||t==="face")spr(X,t,cx-12,ny-1);else{if(t)spr(X,t,cx-12,h?ny+4:ny-1);if(h){const keep=SP;SP=0;spr(X,h,cx-12,ny-7);SP=keep}}}
+  B(K,cx-16,hz+19,32,40);B("#5a6378",cx-15,hz+20,30,38);B("#6d778d",cx-15,hz+20,2,38);B("#47506a",cx-15,hz+50,30,2);B(K,cx-6,hz+57,12,6);B(S3,cx-5,hz+58,10,4);
+  for(const p of parts)if(!p.free)B(p.c,p.x,p.y,p.s,p.s);
+  X.globalAlpha=.07;X.fillStyle="#ffffff";X.beginPath();X.moveTo(140,40);X.lineTo(156,40);X.lineTo(126,110);X.lineTo(120,110);X.lineTo(120,86);X.fill();X.beginPath();X.moveTo(214,40);X.lineTo(220,40);X.lineTo(190,110);X.lineTo(184,110);X.fill();X.globalAlpha=1;
+  X.restore();
+  const bl=Math.floor(time*4)%2;B(K,244,6,8,18);
+  B(SC.alarm?(bl?RED:"#5a1f1c"):"#5a1f1c",245,7,6,5);B(SC.pp==="HOLD"?YEL:"#5a4a1c",245,12,6,5);B(spinning&&!SC.alarm?GRN:"#1f4a2a",245,17,6,5);
+  B("#2a2f40",254,52,8,3);B(K,260,34,54,42);B("#0b1a10",262,36,50,32);B("#2a2f40",262,70,50,4);B(K,282,76,10,10);B("#2a2f40",276,84,22,3);
+  const gr="#6dff8a";txt("PATHPILOT",264,38,gr);B("#1f4a2a",264,44,46,1);
+  txt("S "+(SC.rpm?Math.round(SC.rpm):"----"),264,47,gr);txt("F "+(SC.feed?SC.feed:"----"),264,54,gr);
+  const st=SC.estop?"E-STOP":SC.pp||"READY";txt(st,264,61,SC.estop||st==="E-STOP"?(bl?RED:"#7a2a24"):st==="HOLD"?YEL:CYA)}
+function drawHold(){const m=(MAT[SC.mat]||MAT.al)[0];
+  if(SC.hold==="vise"||SC.hold==="softjaw"){const jc=SC.hold==="softjaw"?MAT.al[0]:S4;
+    B(K,146,88,72,11);B(VBd,147,89,70,9);B(VB,147,89,70,2);B(K,149,73,12,17);B(VB,150,74,9,15);B(jc,158,74,2,15);
+    B(K,203,74,11,16);B(VB,205,75,8,14);B(jc,204,75,2,14);B(S4,213,82,9,2);B(S1,221,77,2,12);
+    if(SC.para)B(S4,160,86,44,2);
+    if(SC.part){B(K,159,75,46,12);B(m,160,76,44,10);B(shade(m,25),160,76,44,1);B(shade(m,-30),160,85,44,1)}}
+  else if(SC.hold==="strap"){const pt=partTop();
+    if(SC.sacr){B(K,133,94,98,5);B("#9a7650",134,95,96,3)}
+    if(SC.part){B(K,139,pt-1,86,pt===85?11:12);B(m,140,pt,84,10);B(shade(m,25),140,pt,84,1);
+      if(SC.tabs)for(const c of[158,182,206]){B(K,c-6,pt+2,12,1);B(K,c-6,pt+8,12,1);B(K,c-6,pt+2,1,7);B(K,c+5,pt+2,1,7);B(m,c-1,pt+2,2,1);B(m,c-1,pt+8,2,1)}}
+    for(const[x,d]of[[128,1],[214,-1]]){B(S2,x,pt+2,8,98-pt-2);B(K,x-1,pt-4,24,5);B(S3,d>0?x:x-2,pt-3,22,3);const sx=d>0?x+10:x+6;B(S4,sx,pt-9,2,107-pt);B(S2,sx-2,pt-7,6,3)}}}
+function hud(){B("#080a12",0,0,320,12);for(let i=0;i<5;i++)heart(4+i*9,3,i<G.hearts);
+  const J=G.L&&curJob();if(J)ctxt(`#${J.no} ${G.L.rack}`,4,S3);const s="SCORE "+G.score;txt(s,316-textW(s),4,YEL)}
+function drawShop(){wall();pegboard(6,16,92,76);const keep=SP;SP=0;
+  [["cal",7,18],["em-flat-carbide-high-3",29,18],["drill",51,18],["mic",72,18],["hammer",7,52],["dti",29,52],["h-er",51,52],["feeler",72,52]].forEach(([k,x,y])=>spr(X,k,x,y));SP=keep;
+  drawMill();drawPlayer(X,64,100,2,0)}
+function drawParticles(){for(const p of parts)if(p.free)B(p.c,p.x,p.y,p.s,p.s)}
+function drawBubbles(){for(const b of bubbles){const a=time-b.t0;if(a>1.3)continue;const y=b.y-a*14,w=textW(b.text)+6;let x=Math.max(2,Math.min(318-w,b.x-w/2));B(K,x-1,y-1,w+2,11);B("#f5f2e8",x,y,w,9);txt(b.text,x+3,y+2,b.c===YEL?"#7a5a10":b.c===GRN?"#1f6a34":b.c===ORG?"#8a4a14":"#9c2a24")}}
+function drawTitle(){drawShop();X.globalAlpha=.74;B(K,0,0,320,180);X.globalAlpha=1;
+  SP=time*10;spr(X,"em-flat-tin-high-3",14,96,3);spr(X,"em-ball-tialn-high-2",234,96,3);SP=0;
+  ctxt("CRIB QUEST",42,YEL,4,"#6b4c0c");ctxt("TORMACH 1100M SHOP TRAINING",72,S4);ctxt(SHOP.name,82,CYA);
+  if(Math.floor(time*2)%2)ctxt("CLOCK IN BELOW",128,"#ffffff",2,K);drawParticles()}
+const RX=i=>28+i*44;
+function drawMap(dt){wall();ctxt("PICK A RACK",14,YEL,2,K);
+  LEVELS.forEach((L,i)=>{const cx=RX(i),c=(MAT[L.mat]||MAT.al)[0],q=L.id==="q",sel=i===G.mapSel;
+    if(q){B(YEL,cx-16,60,32,78);for(let k=0;k<13;k++)B(K,cx-16,60+k*6,32,3)}else B(K,cx-16,60,32,78);
+    B("#3a4058",cx-14,62,28,74);
+    for(const y of[86,110,134]){B("#232838",cx-14,y,28,3);for(let k=0;k<3;k++){B(shade(c,-30),cx-12,y-4-k*4,24,3);B(c,cx-12,y-4-k*4,24,2)}}
+    B(sel?YEL:"#e6ecf5",cx-14,64,28,9);txt(L.rack,cx-(textW(L.rack)>>1),66,K);
+    const p=prog[L.id]||{};for(let k=0;k<3;k++)star(cx-9+k*7,52,k<(p.stars||0));
+    if(sel){const bob=Math.floor(time*3)%2;for(let r=0;r<4;r++)B(YEL,cx-4+r,40+r+bob,8-2*r,1)}});
+  const target=G.walkTo!=null?RX(G.walkTo)-12:RX(G.mapSel)-12;const dx=target-G.px;let moving=Math.abs(dx)>1;
+  if(moving)G.px+=Math.sign(dx)*Math.min(Math.abs(dx),130*dt);else if(G.walkTo!=null){const i=G.walkTo;G.walkTo=null;startLevel(i);return}
+  drawPlayer(X,G.px|0,122,2,moving?Math.floor(time*8)%2:0)}
+function drawRush(){wall();pegboard(0,0,320,140);X.globalAlpha=.55;B(K,0,0,320,180);X.globalAlpha=1;const r=G.r;if(!r)return;
+  B(K,19,15,282,12);B(S1,20,16,280,10);const f=Math.max(0,r.left/60);B(r.left>15?GRN:(Math.floor(time*4)%2?RED:ORG),21,17,278*f|0,8);
+  ctxt("CRIB RUSH",34,YEL,2,K);ctxt(String(r.score),62,"#ffffff",6,K);ctxt(r.over?"TIME!":r.combo>=5?"COMBO X2!":r.combo>=2?"STREAK "+r.combo:"",110,CYA,2,K);
+  SP=time*12;spr(X,"em-flat-carbide-high-3",20,70,3);spr(X,"drill",228,70,3);SP=0;ctxt(Math.ceil(r.left)+"S LEFT · BEST "+rushBest,158,S4);drawParticles()}
+let bookSprites=null;
+function drawBook(){B("#5a4632",0,0,320,180);for(let i=4;i<320;i+=6)for(let j=5;j<180;j+=6)B("#3e2f22",i,j,1,1);B("#080a12",0,0,320,14);ctxt("CRIB BOOK "+cards.size+"/"+TERMS.length,4,YEL);
+  if(!bookSprites){const m=new Map();TERMS.forEach(t=>{const k=termSprite(t);if(!m.has(k))m.set(k,[]);m.get(k).push(t.t)});bookSprites=[...m.entries()]}
+  bookSprites.slice(0,60).forEach(([k,names],i)=>{const x=6+(i%12)*26,y=18+Math.floor(i/12)*32;const has=names.some(n=>cards.has(n));spr(X,k,x,y);if(!has){X.globalAlpha=.78;B(K,x-1,y-1,26,26);X.globalAlpha=1}})}
+function drawResult(){drawShop();if(G.failed){X.globalAlpha=.35;B(RED,0,0,320,180);X.globalAlpha=1;ctxt("PULLED OFF THE MILL",20,"#ffffff",2,K)}
+  else{ctxt("SHIFT COMPLETE",18,YEL,2,K);for(let k=0;k<3;k++){const on=k<G.resStars&&time-G.resT>.3+k*.3;star(118+k*30,34,on,4)}if(Math.random()<.3)burst(40+Math.random()*240,40,pick([YEL,GRN,CYA,ORG,REDl]),3)}}
+
+let last=0,time=0;
+function loop(ts){const t=ts/1000,dt=Math.min(.05,last?t-last:0);last=t;time=t;
+  if(G.mode==="rush"&&G.r&&!G.r.paused&&!G.r.over){G.r.left-=dt;const e=document.getElementById("r-time");if(e)e.textContent=Math.ceil(Math.max(0,G.r.left))+"s";if(G.r.left<=0){G.r.left=0;endRush()}}
+  if(G.mode==="job"||G.mode==="title"||G.mode==="result")updateScene(dt);
+  for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=320*dt;p.life-=dt;if(!p.free&&p.y>106){p.y=106;p.vx*=.3;p.vy=0}}
+  parts=parts.filter(p=>p.life>0);if(parts.length>500)parts.splice(0,parts.length-500);bubbles=bubbles.filter(b=>time-b.t0<1.3);
+  X.save();if(SC.shake>0){SC.shake-=dt;X.translate((Math.random()-.5)*4|0,(Math.random()-.5)*4|0)}
+  if(G.mode==="title")drawTitle();else if(G.mode==="map")drawMap(dt);else if(G.mode==="rush")drawRush();else if(G.mode==="book")drawBook();else if(G.mode==="result")drawResult();else{drawShop();hud()}
+  if(G.mode!=="title"&&G.mode!=="rush")drawParticles();drawBubbles();
+  if(SC.flash>0){SC.flash-=dt;X.globalAlpha=Math.max(0,SC.flash)*1.2;B(SC.flashC,0,0,320,180);X.globalAlpha=1}
+  X.restore();cv.classList.toggle("clicky",G.mode==="map");requestAnimationFrame(loop)}
+
+/* ============ INPUT ============ */
+cv.addEventListener("click",e=>{if(G.mode!=="map")return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*320,y=(e.clientY-r.top)/r.height*180;if(y<40||y>150)return;
+  const i=LEVELS.findIndex((_,k)=>Math.abs(RX(k)-x)<18);if(i>=0){sfx.click();goRack(i)}});
+document.addEventListener("keydown",e=>{if(e.target.matches("input,textarea,select"))return;
+  if(e.key==="Escape"){if(G.mode!=="map"){toMap();e.preventDefault()}return}
+  if(G.mode==="map"&&G.walkTo==null){if(e.key==="ArrowRight"||e.key==="ArrowLeft"){G.mapSel=(G.mapSel+(e.key==="ArrowRight"?1:-1)+LEVELS.length)%LEVELS.length;document.querySelectorAll(".lvl").forEach((b,k)=>b.classList.toggle("sel",k===G.mapSel));sfx.tick();e.preventDefault();return}
+    if(e.key==="Enter"&&!e.target.matches("button")){goRack(G.mapSel);e.preventDefault();return}}
+  if(/^[1-4]$/.test(e.key)){const b=[...document.querySelectorAll("#panel .opt")][+e.key-1];if(b&&!b.disabled){b.click();e.preventDefault()}return}
+  if((e.key==="Enter"||e.key===" ")&&!e.target.matches("button,a,label")){const b=document.querySelector("#panel [data-primary]");if(b){b.click();e.preventDefault()}}});
+$("#b-home").addEventListener("click",()=>{sfx.click();toMap()});
+const sb=$("#b-snd");function paintSnd(){sb.textContent=sound?"SOUND ON":"SOUND OFF";sb.setAttribute("aria-pressed",String(sound))}
+sb.addEventListener("click",()=>{sound=!sound;SAVE.set("snd",sound);paintSnd();sfx.click()});paintSnd();
+
+$("#tagline").textContent=(SHOP.name?SHOP.name+" · ":"")+"TORMACH 1100M · SHOP TRAINING";
+toTitle();requestAnimationFrame(loop);
+</script>
+</body>
+</html>

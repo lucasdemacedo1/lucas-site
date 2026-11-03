@@ -6,6 +6,7 @@ Everything that gets published lives in `public/`:
 
 - `public/index.html`: home page (story, work, side projects, kitchen)
 - `public/racetrac.html`: RaceTrac summer 2026 case studies
+- `public/TormachQuest/`: Crib Quest, a pixel-art Tormach 1100M training game (source: github.com/lucasdemacedo1/tormach-quest)
 - `public/apps/`: offline demos of JARVIS and the Remaining Spend dashboard (sample data, no API calls)
 - `public/img/`: screenshots and kitchen photos (location data stripped)
 - `public/404.html`: shown for any missing page
