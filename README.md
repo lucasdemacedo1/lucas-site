@@ -1,4 +1,4 @@
-# lucasdemacedo.com
+# lucasdemacedo.dev
 
 Personal site of Lucas de Macedo. Plain static files, no build step.
 
