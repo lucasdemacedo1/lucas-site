@@ -94,7 +94,7 @@
 .site-nav.open .menu-btn .ico::before { transform: translateY(5px) rotate(45deg); }
 .site-nav.open .menu-btn .ico::after { transform: translateY(-5px) rotate(-45deg); }
 .site-nav.on-night .menu-btn { background: rgba(18,24,33,.6); border-color: var(--night-rule); color: var(--night-ink); }
-@media (max-width: 640px) {
+@media (max-width: 820px) {
   .site-nav .menu-btn { display: inline-flex; }
   .site-nav ul {
     display: none; position: absolute; top: 100%; left: 0; right: 0; margin: 0; flex-direction: column; gap: 0;
@@ -118,6 +118,18 @@
   font-family: var(--font-ui); font-size: 13px; color: var(--muted);
 }
 .site-foot a { color: var(--muted); display: inline-block; padding-block: 10px; margin-block: -10px; }
+
+
+/* the tour entry in the nav reads as a button */
+.site-nav li a.tour-link { display: inline-flex; align-items: center; gap: 8px; margin-left: 8px; padding-inline: 12px; font-weight: 600; background: var(--accent); color: var(--on-accent); }
+.site-nav li a.tour-link:hover { background: var(--accent); color: var(--on-accent); filter: brightness(1.12); }
+.site-nav.on-night li a.tour-link, .site-nav.on-night li a.tour-link:hover { background: var(--night-accent); color: var(--night); }
+.play { display: inline-block; width: 0; height: 0; border-left: 8px solid currentColor; border-block: 5px solid transparent; flex-shrink: 0; }
+/* seven links need more room than five: the Menu button takes over a little earlier, and one link steps aside in between */
+@media (min-width: 821px) and (max-width: 1040px) { .site-nav li.opt { display: none; } }
+@media (max-width: 820px) {
+  .site-nav li a.tour-link { display: flex; margin: 10px 0 0; justify-content: center; border-radius: 8px; border-top: 0; }
+}
 
 
 /* Layout: a dark telemetry hero, then story, work, side projects and kitchen as full-width bands on a 1180px grid. */
@@ -144,20 +156,21 @@ section.band { padding-block: 96px 40px; }
 .hero {
   position: relative; overflow: hidden; isolation: isolate;
   background: var(--night); color: var(--night-ink);
-  padding-block: 72px 56px;
+  padding-block: 64px 56px;
 }
 .hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; }
 .hero::after {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: linear-gradient(90deg, var(--night) 0%, rgba(10, 13, 17, 0.82) 38%, rgba(10, 13, 17, 0.25) 75%, rgba(10, 13, 17, 0.55) 100%);
 }
-.hero .wrap { display: grid; gap: 22px; }
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px 40px; align-items: center; }
+.hero .pitch { display: grid; gap: 22px; min-width: 0; }
 .hero .place { font-family: var(--font-ui); font-size: 14px; color: var(--night-muted); display: flex; flex-wrap: wrap; gap: 4px 18px; }
 .hero .place span::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--night-go); margin-right: 8px; vertical-align: 1px; }
 .hero .place span + span::before { background: var(--night-signal); }
 .name {
   margin: 0; font-family: var(--font-display); font-stretch: 68%; font-weight: 900; text-transform: uppercase;
-  font-size: clamp(64px, 14vw, 212px); line-height: 0.8; letter-spacing: -0.01em;
+  font-size: clamp(64px, 17vw, 168px); line-height: 0.8; letter-spacing: -0.01em;
 }
 .name .line { display: block; overflow: hidden; padding-bottom: 0.04em; }
 .name .line + .line { color: var(--night-accent); }
@@ -168,23 +181,24 @@ section.band { padding-block: 96px 40px; }
   @keyframes rise { from { transform: translateY(105%) rotate(4deg); } to { transform: none; } }
 }
 .role {
-  margin: 0; font-family: var(--font-mono); font-size: clamp(16px, 2.2vw, 22px); color: var(--night-ink); min-height: 1.5em;
+  margin: 0; font-family: var(--font-mono); font-size: clamp(16px, 2.2vw, 21px); color: var(--night-ink); min-height: 1.5em;
 }
 .role .pre { color: var(--night-muted); }
 .role .word { color: var(--night-signal); }
 .role .caret { display: inline-block; width: 0.6ch; height: 1.1em; vertical-align: -0.18em; background: var(--night-signal); margin-left: 3px; }
 @media (prefers-reduced-motion: no-preference) { .role .caret { animation: blink 1s steps(1) infinite; } @keyframes blink { 50% { opacity: 0; } } }
-.hero .intro { margin: 0; max-width: 54ch; font-size: 19px; line-height: 1.55; color: var(--night-ink); text-wrap: pretty; }
+.hero .intro { margin: 0; max-width: 50ch; font-size: 19px; line-height: 1.55; color: var(--night-ink); text-wrap: pretty; }
 .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
 .btn {
-  display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 6px; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 10px; padding: 13px 18px; border-radius: 6px; text-decoration: none;
   font-family: var(--font-ui); font-size: 15px; font-weight: 600; border: 1px solid transparent; cursor: pointer;
 }
 .btn.primary { background: var(--night-accent); color: var(--night); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.primary small { font-size: 13px; font-weight: 500; opacity: .78; padding-left: 10px; border-left: 1px solid rgba(10, 13, 17, .28); }
 .btn.line { border-color: var(--night-rule); color: var(--night-ink); background: rgba(255, 255, 255, 0.02); }
 .btn.line:hover { border-color: var(--night-accent); }
-.btn .arr { transition: transform .2s ease; }
-.btn:hover .arr { transform: translateX(3px); }
+.hero :focus-visible, .tour :focus-visible { outline-color: var(--night-accent); }
 .hud {
   display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 18px; font-family: var(--font-mono); font-size: 12px; color: var(--night-muted);
   font-variant-numeric: tabular-nums;
@@ -192,13 +206,31 @@ section.band { padding-block: 96px 40px; }
 .hud b { font-weight: 600; }
 .hud .spd b { color: var(--night-accent); } .hud .thr b { color: var(--night-go); } .hud .brk b { color: var(--night-signal); }
 
-/* ---------------- marquee ---------------- */
-.marquee { background: var(--night-2); color: var(--night-ink); border-block: 1px solid var(--night-rule); overflow: hidden; }
-.marquee .track { display: flex; width: max-content; }
-@media (prefers-reduced-motion: no-preference) { .marquee .track { animation: slide 38s linear infinite; } .marquee:hover .track { animation-play-state: paused; } @keyframes slide { to { transform: translateX(-50%); } } }
-.marquee ul { list-style: none; margin: 0; padding: 14px 0; display: flex; }
-.marquee li { font-family: var(--font-display); font-stretch: 75%; font-weight: 700; font-size: 20px; text-transform: uppercase; padding-inline: 18px; white-space: nowrap; display: flex; align-items: center; gap: 36px; }
-.marquee li::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--night-signal); }
+/* the tour map: a circuit whose turns are the stops. Shown beside the name on wide screens. */
+.lap { display: none; margin: 0; min-width: 0; }
+.lap svg { display: block; width: 100%; height: auto; overflow: visible; }
+.lap figcaption { margin-top: 6px; font-family: var(--font-ui); font-size: 13px; color: var(--night-muted); text-align: center; }
+.track .road { fill: none; stroke: #3B4757; stroke-width: 17; stroke-linejoin: round; }
+.track .lane { fill: none; stroke: #161D27; stroke-width: 13; stroke-linejoin: round; }
+.track .mid { fill: none; stroke: var(--night-muted); stroke-width: 1; stroke-dasharray: 1 9; stroke-linecap: round; opacity: .7; }
+.track .car { fill: var(--night-signal); }
+.track .halo { fill: var(--night-signal); opacity: .22; }
+.track .turn { cursor: pointer; outline: none; }
+.track .turn circle { fill: var(--night); stroke: var(--night-accent); stroke-width: 1.5; transition: fill .15s ease; }
+.track .turn .n { font: 700 13px var(--font-ui); fill: var(--night-ink); text-anchor: middle; dominant-baseline: central; font-variant-numeric: tabular-nums; pointer-events: none; }
+.track .turn .l { font: 500 15.5px var(--font-ui); fill: #C3CCD8; transition: fill .15s ease; }
+.track .turn:hover circle, .track .turn:focus-visible circle { fill: var(--night-accent); }
+.track .turn:hover .n, .track .turn:focus-visible .n { fill: var(--night); }
+.track .turn:hover .l, .track .turn:focus-visible .l { fill: var(--night-ink); }
+.track .turn:focus-visible circle { stroke: var(--night-ink); stroke-width: 2.5; }
+.track .turn.end circle { fill: var(--night-accent); }
+.track .turn.end .n { fill: var(--night); }
+@media (min-width: 1120px) {
+  .hero { padding-block: 56px 48px; }
+  .hero .wrap { grid-template-columns: minmax(0, 1fr) min(46%, 540px); }
+  .lap { display: block; }
+  .name { font-size: clamp(100px, 10.2vw, 128px); }
+}
 
 /* ---------------- reveal on scroll (never hidden at rest) ---------------- */
 @supports (animation-timeline: view()) {
@@ -242,61 +274,75 @@ section.band { padding-block: 96px 40px; }
 .timeline p { margin: 0; max-width: 58ch; text-wrap: pretty; }
 .timeline a.more { display: inline-block; margin-top: 2px; padding-block: 10px; font-family: var(--font-ui); font-size: 15px; font-weight: 600; }
 
-/* ---------------- work ---------------- */
-.work-card {
-  display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; border-radius: 12px; overflow: hidden;
-  background: var(--surface); border: 1px solid var(--rule); text-decoration: none; color: var(--ink);
-  transform: perspective(1200px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .25s ease, border-color .2s ease;
+/* ---------------- work: screenshots first, no card boxes ---------------- */
+.band-head .more { font-family: var(--font-ui); font-size: 15px; font-weight: 600; margin-top: 10px; justify-self: start; padding-block: 6px; }
+.items { display: grid; gap: 64px 40px; grid-template-columns: minmax(0, 1fr); }
+.item { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); align-content: start; min-width: 0; scroll-margin-top: 80px; }
+.shot {
+  position: relative; display: block; overflow: hidden; border-radius: 8px; border: 1px solid var(--rule); background: var(--night);
+  color: inherit; text-decoration: none;
 }
-.work-card:hover { border-color: var(--accent); }
-@media (min-width: 900px) { .work-card { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); } }
-.work-card .txt { padding: 32px; display: grid; gap: 12px; align-content: start; }
-.work-card .org { margin: 0; font-family: var(--font-display); font-stretch: 70%; font-weight: 900; font-size: clamp(54px, 7vw, 88px); line-height: .85; text-transform: uppercase; }
-.work-card .meta { font-family: var(--font-ui); font-size: 14px; color: var(--muted); }
-.work-card .meta b { color: var(--ink); font-weight: 600; }
-.work-card p.sum { margin: 0; text-wrap: pretty; }
+.shot img { width: 100%; height: 100%; object-fit: cover; object-position: top left; transition: transform .5s cubic-bezier(.2, .7, .2, 1); }
+.shot img.px { image-rendering: pixelated; object-position: center; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) { a.shot:hover img { transform: scale(1.025); } }
+.shot .live {
+  position: absolute; left: 12px; top: 12px; font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+  background: var(--night); color: var(--night-ink); border: 1px solid var(--night-rule); padding: 5px 10px; border-radius: 99px;
+}
+.shot .live i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--night-go); margin-right: 7px; vertical-align: 1px; }
+.item .txt { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.item .area { margin: 0; font-family: var(--font-ui); font-size: 14px; color: var(--muted); }
+.item h3 { margin: 0; font-family: var(--font-display); font-stretch: 74%; font-weight: 900; font-size: clamp(32px, 3.6vw, 44px); line-height: .95; text-transform: uppercase; text-wrap: balance; }
+.item.lead h3 { font-size: clamp(40px, 5.4vw, 68px); line-height: .9; }
+.item .sum { margin: 0; max-width: 58ch; text-wrap: pretty; }
+.facts { margin: 4px 0 0; padding-top: 14px; border-top: 1px solid var(--rule); display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px 24px; }
+.facts dt { font-family: var(--font-ui); font-size: 13px; color: var(--muted); }
+.facts dd { margin: 0; font-family: var(--font-ui); font-size: 16px; font-weight: 600; line-height: 1.35; }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0; list-style: none; }
 .tags li { font-family: var(--font-ui); font-size: 12px; font-weight: 600; padding: 4px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
-.work-card .go { font-family: var(--font-ui); font-weight: 600; font-size: 15px; color: var(--accent); margin-top: 6px; display: inline-flex; gap: 8px; }
-.work-card:hover .go .arr { transform: translateX(4px); }
-.go .arr { transition: transform .2s ease; }
-.mosaic { position: relative; background: var(--night); overflow: hidden; min-height: 300px; }
-.mosaic .grid { position: absolute; inset: -12% -8%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; transform: rotate(-6deg); }
-.mosaic img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; border-radius: 4px; opacity: .92; }
-@media (prefers-reduced-motion: no-preference) {
-  .mosaic .col { display: grid; gap: 10px; align-content: start; animation: drift 26s ease-in-out infinite alternate; }
-  .mosaic .col:nth-child(2n) { animation-direction: alternate-reverse; }
-  @keyframes drift { from { transform: translateY(-6%); } to { transform: translateY(6%); } }
-  .work-card:hover .mosaic .col { animation-duration: 9s; }
+.acts { margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; font-family: var(--font-ui); font-size: 15px; font-weight: 600; }
+.acts a { padding-block: 8px; }
+.acts a.main { padding: 9px 14px; border-radius: 6px; background: var(--accent); color: var(--on-accent); text-decoration: none; }
+.acts a.main:hover { filter: brightness(1.12); }
+@media (min-width: 760px) {
+  .items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .item.lead, .rows { grid-column: 1 / -1; }
 }
-.mosaic .col { display: grid; gap: 10px; align-content: start; }
-.mosaic .badge {
-  position: absolute; left: 16px; bottom: 16px; z-index: 2; font-family: var(--font-ui); font-size: 13px; font-weight: 600;
-  background: var(--night); color: var(--night-ink); border: 1px solid var(--night-rule); padding: 6px 10px; border-radius: 99px;
+@media (min-width: 900px) {
+  .item.lead { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 40px; align-items: center; }
+  .item.lead.flip { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  .item.lead.flip .shot { order: 2; }
 }
-.mosaic .badge i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--night-go); margin-right: 6px; }
 
-/* ---------------- projects ---------------- */
-.proj-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
-.proj {
-  position: relative; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 28px; display: grid; gap: 12px; align-content: start;
-  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .25s ease;
-  overflow: hidden;
+/* items with no screenshot get a dark panel carrying the numbers */
+.panel { background: var(--night); color: var(--night-ink); border-color: var(--night-rule); margin: 0; display: grid; align-content: center; padding: clamp(22px, 3.2vw, 40px); }
+.panel.nums { gap: 0; }
+.panel.nums div { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 24px; flex-wrap: wrap; padding-block: 14px; border-top: 1px solid var(--night-rule); }
+.panel.nums div:first-child { border-top: 0; padding-top: 0; }
+.panel.nums div:last-child { padding-bottom: 0; }
+.panel.nums dt { order: 2; font-family: var(--font-ui); font-size: 15px; color: var(--night-muted); }
+.panel.nums dd { margin: 0; font-family: var(--font-display); font-stretch: 72%; font-weight: 900; font-size: clamp(48px, 6vw, 80px); line-height: .9; font-variant-numeric: tabular-nums; }
+.panel.nums div:first-child dd { color: var(--night-accent); }
+.panel.placard { gap: 4px; }
+.panel.placard b { font-family: var(--font-display); font-stretch: 68%; font-weight: 900; font-size: clamp(96px, 12vw, 168px); line-height: .8; text-transform: uppercase; color: var(--night-accent); }
+.panel.placard span { font-family: var(--font-ui); font-size: 15px; color: var(--night-muted); }
+
+/* the shorter entries: one line each, linked to their case study */
+.rows { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); scroll-margin-top: 80px; }
+.rows li { border-bottom: 1px solid var(--rule); }
+.row { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 4px 18px; align-items: center; padding: 16px 0; color: var(--ink); text-decoration: none; }
+.row img { grid-row: span 2; align-self: start; margin-top: 3px; width: 96px; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; border-radius: 5px; border: 1px solid var(--rule); background: var(--night); }
+.row .rn { font-family: var(--font-display); font-stretch: 78%; font-weight: 800; font-size: 24px; line-height: 1; text-transform: uppercase; align-self: end; }
+.row .rn small { display: block; margin-top: 5px; font-family: var(--font-ui); font-stretch: 100%; font-weight: 500; font-size: 13px; text-transform: none; color: var(--muted); }
+.row .rs { font-size: 16px; line-height: 1.45; color: var(--muted); align-self: start; text-wrap: pretty; }
+.row .rg { display: none; font-family: var(--font-ui); font-size: 14px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+.row:hover .rn, .row:hover .rg { color: var(--accent); }
+@media (min-width: 900px) {
+  .row { grid-template-columns: 132px minmax(0, 300px) minmax(0, 1fr) auto; gap: 28px; }
+  .row img { grid-row: auto; align-self: center; margin-top: 0; width: 132px; }
+  .row .rn, .row .rs { align-self: center; }
+  .row .rg { display: block; }
 }
-.proj .top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.proj .kind { font-family: var(--font-ui); font-size: 13px; color: var(--muted); }
-.status { font-family: var(--font-ui); font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 99px; border: 1px solid var(--rule); color: var(--muted); }
-.status.live { border-color: var(--go); color: var(--go); }
-.status.live::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--go); margin-right: 6px; vertical-align: 1px; }
-.proj h3 { margin: 0; font-family: var(--font-display); font-stretch: 70%; font-weight: 900; font-size: 64px; line-height: .85; text-transform: uppercase; }
-.proj p { margin: 0; text-wrap: pretty; }
-.proj .facts { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--font-ui); font-size: 14px; font-weight: 600; }
-.proj .facts span::before { content: "→ "; color: var(--signal); }
-.proj .glow {
-  position: absolute; width: 280px; height: 280px; border-radius: 50%; pointer-events: none; left: var(--mx, -999px); top: var(--my, -999px);
-  transform: translate(-50%, -50%); background: radial-gradient(circle, var(--accent-soft), transparent 70%); z-index: 0; opacity: .9;
-}
-.proj > *:not(.glow) { position: relative; z-index: 1; }
 
 /* ---------------- kitchen ---------------- */
 .kitchen { background: var(--surface); border-block: 1px solid var(--rule); margin-top: 72px; }
@@ -356,6 +402,66 @@ section.band { padding-block: 96px 40px; }
 .links a { font-family: var(--font-ui); font-size: 16px; font-weight: 600; padding: 12px 18px; border-radius: 6px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); text-decoration: none; }
 .links a:hover { border-color: var(--accent); color: var(--accent); }
 .links .soon { font-family: var(--font-ui); color: var(--muted); }
+
+/* ---------------- guided tour ---------------- */
+/* A docked narration card plus a spotlight ring. The card is dark in both themes, like the hero. */
+body.touring { padding-bottom: var(--tour-h, 0px); }
+.tour-ring {
+  position: fixed; left: 0; top: 0; z-index: 60; pointer-events: none; border-radius: 12px;
+  border: 2px solid var(--night-accent); box-shadow: 0 0 0 200vmax rgba(8, 11, 15, .5), 0 0 0 6px rgba(141, 176, 227, .2);
+  transition: opacity .25s ease;
+}
+.tour-ring.off { opacity: 0; }
+.tour {
+  position: fixed; z-index: 70; left: 50%; bottom: max(16px, env(safe-area-inset-bottom, 0px)); translate: -50% 0;
+  width: min(760px, calc(100vw - 24px)); overflow: hidden; outline: none;
+  display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 0 18px; align-items: center;
+  padding: 14px 16px 18px 12px; border-radius: 14px; background: var(--night); color: var(--night-ink);
+  border: 1px solid var(--night-rule); box-shadow: 0 24px 60px -16px rgba(0, 0, 0, .6);
+  font-family: var(--font-ui);
+}
+@media (prefers-reduced-motion: no-preference) { .tour { animation: tour-in .28s cubic-bezier(.2, .7, .2, 1); } @keyframes tour-in { from { opacity: 0; transform: translateY(18px); } } }
+.tour-map { display: block; width: 100%; height: auto; overflow: visible; }
+.tour-map .road { stroke-width: 26; }
+.tour-map .lane { stroke-width: 18; }
+.tour-map .mid { display: none; }
+.tour-map .dot { fill: var(--night-rule); stroke: var(--night-muted); stroke-width: 2.5; }
+.tour-map .dot.done { fill: var(--night-accent); stroke: var(--night-accent); }
+.tour-map .dot.now { fill: var(--night); stroke: var(--night-signal); stroke-width: 4; }
+.tour-body { display: grid; gap: 8px; min-width: 0; }
+.tour-head { display: flex; align-items: flex-start; gap: 12px; }
+.tour-title { display: grid; gap: 5px; min-width: 0; flex: 1; }
+.tour-top { display: flex; align-items: baseline; gap: 14px; font-size: 13px; color: var(--night-muted); font-variant-numeric: tabular-nums; }
+.tour-top p { margin: 0; }
+.tour-time { font-family: var(--font-mono); font-size: 12px; }
+.tour-name { margin: 0; font-family: var(--font-display); font-stretch: 76%; font-weight: 800; font-size: 26px; line-height: 1; text-transform: uppercase; }
+.tour-say { margin: 0; font-family: var(--font-body); font-size: 17px; line-height: 1.5; color: var(--night-ink); text-wrap: pretty; }
+.tour-links { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 14px; font-weight: 600; }
+.tour-links a { color: var(--night-accent); padding-block: 4px; }
+.tour-links:empty { display: none; }
+.tour-ctl { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
+.tour-ctl button {
+  min-height: 36px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--night-rule); background: rgba(255, 255, 255, .03); color: var(--night-ink);
+  font-family: var(--font-ui); font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.tour-ctl button:hover:not(:disabled) { border-color: var(--night-accent); }
+.tour-ctl button:disabled { opacity: .4; cursor: default; }
+.tour-ctl button.go { background: var(--night-accent); border-color: var(--night-accent); color: var(--night); }
+.tour-ctl button.tour-x { width: 36px; padding: 0; border-radius: 50%; margin-left: 6px; font-size: 13px; line-height: 1; }
+.tour-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--night-rule); }
+.tour-bar i { display: block; height: 100%; width: 100%; background: var(--night-signal); transform-origin: left; transform: scaleX(var(--k, 0)); }
+@media (max-width: 680px) {
+  .tour { grid-template-columns: 68px minmax(0, 1fr); gap: 10px 12px; padding: 12px 12px 15px; bottom: max(8px, env(safe-area-inset-bottom, 0px)); }
+  .tour-body, .tour-head { display: contents; }
+  .tour-name { font-size: 22px; }
+  .tour-say { font-size: 16px; order: 2; }
+  .tour-links { order: 3; }
+  .tour-ctl { order: 4; }
+  .tour-say, .tour-links, .tour-ctl { grid-column: 1 / -1; }
+  .tour-ctl button { min-height: 42px; padding: 0 14px; }
+  .tour-ctl button.go { flex: 1; }
+  .tour-ctl button.tour-x { width: 42px; margin-left: 0; }
+}
 </style>
 </head>
 <body>
@@ -366,12 +472,13 @@ section.band { padding-block: 96px 40px; }
     <a class="mark" href="#top"><b>LdM</b><span>Lucas de Macedo</span></a>
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-links"><span class="ico" aria-hidden="true"></span>Menu</button>
     <ul id="site-links">
-      <li><a href="#story">Story</a></li>
       <li><a href="#work">Work</a></li>
       <li><a href="#projects">Projects</a></li>
+      <li><a href="#story">Story</a></li>
       <li><a href="#kitchen">Kitchen</a></li>
       <li><a href="#contact">Contact</a></li>
-      <li><a href="racetrac.html">RaceTrac case studies</a></li>
+      <li class="opt"><a href="racetrac.html">RaceTrac case studies</a></li>
+      <li><a class="tour-link" href="#tour" data-tour-start><span class="play" aria-hidden="true"></span>Take the tour</a></li>
     </ul>
   </div>
 </nav>
@@ -384,28 +491,34 @@ section.band { padding-block: 96px 40px; }
   nav.addEventListener('click', function (e) { if (e.target.closest('ul a')) set(false); });
   document.addEventListener('click', function (e) { if (!nav.contains(e.target)) set(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && nav.classList.contains('open')) { set(false); btn.focus(); } });
-  window.addEventListener('resize', function () { if (innerWidth > 640) set(false); });
+  window.addEventListener('resize', function () { if (innerWidth > 820) set(false); });
 })();
 </script>
 
 <header class="hero gutter" id="top">
   <canvas id="telemetry" aria-hidden="true"></canvas>
   <div class="wrap">
-    <div class="place"><span id="place"></span><span id="school"></span></div>
-    <h1 class="name" aria-label="Lucas de Macedo"><span class="line" aria-hidden="true">Lucas</span><span class="line" aria-hidden="true">de Macedo</span></h1>
-    <p class="role" aria-live="off"><span class="pre">I'm a </span><span class="word" id="role">software engineer</span><span class="caret" aria-hidden="true"></span></p>
-    <p class="intro" id="intro"></p>
-    <div class="cta">
-      <a class="btn primary" href="#work">See my work <span class="arr" aria-hidden="true">→</span></a>
-      <a class="btn line" href="#story">Read the story</a>
+    <div class="pitch">
+      <div class="place"><span id="place"></span><span id="school"></span></div>
+      <h1 class="name" aria-label="Lucas de Macedo"><span class="line" aria-hidden="true">Lucas</span><span class="line" aria-hidden="true">de Macedo</span></h1>
+      <p class="role" aria-live="off"><span class="pre">I'm a </span><span class="word" id="role">software engineer</span><span class="caret" aria-hidden="true"></span></p>
+      <p class="intro" id="intro"></p>
+      <div class="cta">
+        <button class="btn primary" type="button" data-tour-start><span class="play" aria-hidden="true"></span><span id="tour-cta"></span><small id="tour-cta-note"></small></button>
+        <a class="btn line" href="#work">See the work</a>
+      </div>
+      <div class="hud" aria-hidden="true"><span class="spd">SPD <b id="h-spd">000</b> km/h</span><span class="thr">THR <b id="h-thr">000</b>%</span><span class="brk">BRK <b id="h-brk">000</b>%</span><span>sim rig telemetry, generated</span></div>
     </div>
-    <div class="hud" aria-hidden="true"><span class="spd">SPD <b id="h-spd">000</b> km/h</span><span class="thr">THR <b id="h-thr">000</b>%</span><span class="brk">BRK <b id="h-brk">000</b>%</span><span>sim rig telemetry, generated</span></div>
+    <figure class="lap">
+      <svg class="track" id="lap-map" viewBox="-8 0 628 420" role="group" aria-label="Map of the tour. Each turn is a stop."></svg>
+      <figcaption>Each turn is a stop on the tour. Pick one to start there.</figcaption>
+    </figure>
   </div>
 </header>
 
-<div class="marquee" aria-label="Tools I work with"><div class="track" id="marquee"></div></div>
-
 <main>
+  <div id="groups"></div>
+
   <section class="band gutter" id="story">
     <div class="wrap">
       <div class="band-head reveal"><p class="eyebrow">The story so far</p><h2 class="h2">From capture-the-flag to production</h2></div>
@@ -414,23 +527,10 @@ section.band { padding-block: 96px 40px; }
           <figure><img src="img/lucas.jpg" width="900" height="900" alt="Portrait of Lucas de Macedo"></figure>
           <div class="stats" id="stats"></div>
           <div class="along"><p>Along the way</p><ul id="along"></ul></div>
+          <div class="along"><p>Works with</p><span id="stack"></span></div>
         </aside>
         <div class="tl"><span class="prog" aria-hidden="true"></span><ol class="timeline" id="timeline"></ol></div>
       </div>
-    </div>
-  </section>
-
-  <section class="band gutter" id="work">
-    <div class="wrap">
-      <div class="band-head reveal"><p class="eyebrow">Work</p><h2 class="h2">Internships</h2></div>
-      <div id="work-list" style="display: grid; gap: 24px;"></div>
-    </div>
-  </section>
-
-  <section class="band gutter" id="projects">
-    <div class="wrap">
-      <div class="band-head reveal"><p class="eyebrow">Side projects</p><h2 class="h2">Outside the day job</h2></div>
-      <div class="proj-grid" id="proj-list"></div>
     </div>
   </section>
 
@@ -469,6 +569,28 @@ section.band { padding-block: 96px 40px; }
 
 <footer class="site-foot gutter"><div class="in"><span>Lucas de Macedo · Athens, Georgia</span><span><a href="racetrac.html">RaceTrac case studies</a></span></div></footer>
 
+<div class="tour" id="tour" role="dialog" aria-label="Guided tour" tabindex="-1" hidden>
+  <svg class="tour-map track" id="tour-map" viewBox="0 0 600 420" aria-hidden="true"></svg>
+  <div class="tour-body">
+    <div class="tour-head">
+      <div class="tour-title">
+        <div class="tour-top"><p id="tour-count"></p><p class="tour-time" id="tour-time" aria-hidden="true"></p></div>
+        <h2 class="tour-name" id="tour-name"></h2>
+      </div>
+      <div class="tour-ctl">
+        <button type="button" id="tour-back">Back</button>
+        <button type="button" id="tour-play">Pause</button>
+        <button type="button" class="go" id="tour-next">Next</button>
+        <button type="button" class="tour-x" id="tour-close" aria-label="End the tour">✕</button>
+      </div>
+    </div>
+    <p class="tour-say" id="tour-say" aria-live="polite"></p>
+    <div class="tour-links" id="tour-links"></div>
+  </div>
+  <span class="tour-bar" aria-hidden="true"><i id="tour-prog"></i></span>
+</div>
+<div class="tour-ring off" id="tour-ring" aria-hidden="true" hidden></div>
+
 <script>
 /*
   content.js: everything on the home page comes from this one object.
@@ -483,10 +605,23 @@ section.band { padding-block: 96px 40px; }
     `tag` shows as a small label next to the title.
     `note` is optional and shows in the full-screen view. Strip location data
     from phone photos first.
-  - A side project: add an object to `projects`. `status` is free text
-    ('Live', 'In progress', 'Coming soon'). `link` is optional.
-  - Another internship: add an object to `work`. Give it a `page` if it has
-    its own case-study page (like racetrac.html), and `thumbs` for the mosaic.
+  - A project or internship piece: add an object to `items` in one of the
+    `groups`. `size` decides how big it is on the page:
+      'lead'  full width, screenshot beside the text (add flip: true to put the picture on the right)
+      'half'  half width, screenshot above the text
+      'row'   one line with a small thumbnail (needs `img` and one link)
+    The picture is `img` (a screenshot), or `numbers` (big figures on a dark
+    panel), or `placard` (one big word). `links` are the buttons under the
+    text; the first one is the main one. The item's id on the page is
+    'w-' + id, which is what tour stops point at.
+  - Another internship: add a whole new object to `groups` with its own `id`,
+    `title`, `intro` and `items`.
+  - A tour stop: add to `tour.stops` in the order they should play. `target`
+    is the id of the thing to point at (or a list of ids to circle together),
+    `name` is the short label on the map, `say` is the caption. Keep `say`
+    to a sentence or two: the tour moves on by itself and gives each stop
+    time in proportion to its length. The map redraws itself for any number
+    of stops. A link to lucasdemacedo.dev/#tour starts the tour on arrival.
   - A story milestone: add to `story` in time order.
   - Contact links: fill in `contact`. Empty fields are hidden.
 */
@@ -494,7 +629,7 @@ window.SITE = {
   name: 'Lucas de Macedo',
 
   // Hero background: 'circuit', 'constellation', 'anomalies', 'quiet' or 'telemetry'.
-  heroBackground: 'circuit',
+  heroBackground: 'quiet',
   place: 'Athens, Georgia',
   school: 'Computer Systems Engineering, University of Georgia, class of 2029',
 
@@ -561,45 +696,139 @@ window.SITE = {
 
   alongTheWay: ['AI research and data fellow on Handshake AI', 'Bilingual in English and Portuguese'],
 
-  work: [
+  groups: [
     {
-      org: 'RaceTrac',
-      role: 'Enterprise Applications intern',
-      when: 'Summer 2026',
-      summary: 'Fuel and enterprise data apps, internal tools and automation. Two of them run live in the case studies.',
-      tags: ['Databricks', 'Next.js', '.NET', 'Azure DevOps', 'ML'],
-      page: 'racetrac.html',
-      thumbs: ['img/fuel.jpg', 'img/ritztrac.jpg', 'img/jarvis.jpg', 'img/pulse.jpg', 'img/cdm.jpg', 'img/release.jpg', 'img/spend.jpg', 'img/ado.jpg', 'img/paging.jpg', 'img/potbelly-dash.jpg'],
+      id: 'work',
+      title: 'Ten weeks at RaceTrac',
+      intro: 'I spent summer 2026 as an Enterprise Applications intern and shipped ten projects. The first one below is in production, and two of the others run right here on sample data.',
+      more: { href: 'racetrac.html', label: 'Read all ten case studies' },
+      items: [
+        {
+          id: 'fuel', size: 'lead',
+          name: 'Fuel Health Dashboard', area: 'Databricks app for fuel operations',
+          summary: 'Shows the fuel team the health of pumps, tanks and terminals across 780 sites, built on live Insite360 and XPO telemetry. Before it, checking for a slow pump meant writing a query by hand.',
+          img: 'img/fuel.jpg', alt: 'Pump Health view: site, transaction, gallon and alarm totals above flow-trend and volume charts',
+          facts: [['Status', 'In production'], ['Scale', '780 sites, 14,186 pumps']],
+          tags: ['TypeScript', 'React', 'Express', 'Databricks', 'SQL'],
+          links: [{ href: 'racetrac.html#fuel', label: 'Read the case study' }],
+        },
+        {
+          id: 'jarvis', size: 'half', live: true,
+          name: 'JARVIS', area: 'Voice AI prototype',
+          summary: 'A voice assistant prototype for senior leadership that gives a morning briefing and helps with email, Teams and the calendar.',
+          img: 'img/jarvis.jpg', alt: 'JARVIS morning briefing screen with overnight agent results',
+          facts: [['Status', 'Phase 0 prototype'], ['Agents', 'Briefing, email, Teams, calendar']],
+          tags: ['Next.js', 'TypeScript', 'OpenAI Realtime API', 'OpenAI Agents SDK'],
+          links: [{ href: 'apps/jarvis.html', label: 'Open the live demo', newTab: true }, { href: 'racetrac.html#jarvis', label: 'Read the case study' }],
+        },
+        {
+          id: 'spend', size: 'half', live: true,
+          name: 'Remaining spend', area: 'Finance dashboard',
+          summary: "Shows IT leaders how much is left on each purchase order, how fast it's being spent, and which approved money is about to expire.",
+          img: 'img/spend.jpg', alt: 'IT purchase order portfolio with remaining, issued and recallable amounts',
+          facts: [['Found', '$198K left on expired POs'], ['Data', 'Workday purchase orders and invoices']],
+          tags: ['Next.js', 'TypeScript', 'Node.js', 'Python'],
+          links: [{ href: 'apps/spend.html', label: 'Open the live demo', newTab: true }, { href: 'racetrac.html#remaining-spend', label: 'Read the case study' }],
+        },
+        {
+          id: 'anomaly', size: 'half',
+          name: 'POS anomaly detection', area: 'Machine learning proof of concept',
+          summary: 'Flags unusual days in store sales data and sorts each one into a data problem, possible fraud, or an ordinary operational oddity, so the alert reaches the right team.',
+          img: 'img/cdm.jpg', alt: 'Terminal output of the scoring job and its validation checks, all passing',
+          facts: [['Caught', '14 of 14 planted anomalies'], ['False alarms', '0.63% of normal days']],
+          tags: ['scikit-learn', 'PySpark', 'MLflow', 'Databricks SQL', 'Node.js'],
+          links: [{ href: 'racetrac.html#lab', label: 'Try the detector' }, { href: 'racetrac.html#anomaly', label: 'Read the case study' }],
+        },
+        {
+          id: 'ritztrac', size: 'half',
+          name: 'RitzTrac', area: 'Desk booking, full stack',
+          summary: "A desk booking app for hybrid employees, with a live floor map, QR check-in, and desks that free up on their own when someone doesn't show.",
+          img: 'img/ritztrac.jpg', alt: 'Manager dashboard showing a floor map of desks colored by booking status',
+          facts: [['Check-in', 'Web, QR code or NFC'], ['Sign-in', 'Okta SAML or email']],
+          tags: ['Next.js', 'TypeScript', 'Postgres', 'Auth.js', 'Tailwind'],
+          links: [{ href: 'racetrac.html#ritztrac', label: 'Read the case study' }],
+        },
+        { id: 'secret-scanner', size: 'row', name: 'Secret scanner', area: 'Security tooling', img: 'img/ado.jpg',
+          summary: 'A PowerShell tool that checks every repository in an Azure DevOps project, including its full history, for passwords, keys and config files committed by mistake.',
+          links: [{ href: 'racetrac.html#secret-scanner', label: 'Case study' }] },
+        { id: 'paging', size: 'row', name: 'Paging app rebuild', area: '.NET modernization', img: 'img/paging.jpg',
+          summary: 'A rebuild of the system RaceTrac uses to page on-call support, moving it off ASP.NET WebForms onto a web front end and a .NET Web API.',
+          links: [{ href: 'racetrac.html#paging', label: 'Case study' }] },
+        { id: 'release-buddy', size: 'row', name: 'Release Buddy', area: 'Release automation', img: 'img/release.jpg',
+          summary: "A release page and endpoint on the fuel team's release service, so a release can be started from a list of story numbers.",
+          links: [{ href: 'racetrac.html#release-buddy', label: 'Case study' }] },
+        { id: 'delivery-pulse', size: 'row', name: 'Delivery Pulse', area: 'Engineering analytics', img: 'img/pulse.jpg',
+          summary: 'A delivery dashboard for leadership covering two Azure DevOps boards, Enterprise Data and Fuel Dev.',
+          links: [{ href: 'racetrac.html#delivery-pulse', label: 'Case study' }] },
+        { id: 'potbelly', size: 'row', name: 'Potbelly foot traffic', area: 'Intern group project', img: 'img/potbelly-dash.jpg',
+          summary: 'Finding ways to bring the Potbelly in-store experience to people who order without coming in, at a price that works for them and for the business.',
+          links: [{ href: 'racetrac.html#potbelly', label: 'Case study' }] },
+      ],
+    },
+    {
+      id: 'projects',
+      title: 'Outside the day job',
+      intro: 'A startup, a training game for our machine shop, and a capture-the-flag win.',
+      items: [
+        {
+          id: 'spina', size: 'lead', flip: true,
+          name: 'SPINA', area: 'Startup, founding developer, Nov 2025 to now',
+          summary: "A peer-to-peer platform where players wager on their own skill. I took the app to iOS through TestFlight, integrated the web app with Whop, and moved payments from Coinflow to Whop's native payments.",
+          numbers: [['55,000+', 'games played in 2026'], ['$190K+', 'wagered in 2026'], ['5,200+', 'new users in 2026']],
+          tags: ['Expo', 'Node.js', 'Solana', 'Whop'],
+        },
+        {
+          id: 'crib', size: 'half', ratio: '16 / 9', pixel: true,
+          name: 'Crib Quest', area: 'Open-source game, Nov 2026',
+          summary: 'A pixel-art browser game that teaches new machinists in the SSRL shop to run our Tormach 1100M CNC mill: hold the part, pick the bit for each metal, work out speeds and feeds, and react when a cut goes wrong.',
+          img: 'TormachQuest/preview.png', alt: 'Crib Quest title screen: a pixel-art machine shop with a Tormach 1100M mill',
+          facts: [['Size', '7 levels, 82 steps'], ['Glossary', '132 terms'], ['License', 'MIT']],
+          tags: ['JavaScript', 'Canvas', 'Pixel art'],
+          links: [{ href: 'TormachQuest/', label: 'Play it in the browser' }],
+        },
+        {
+          id: 'cyberquest', size: 'half', ratio: '16 / 9',
+          name: 'CyberQuest', area: 'Lockheed Martin, April 2025',
+          summary: "Lockheed Martin's statewide capture-the-flag competition, held in Marietta, Georgia. Our team took first place, working through Linux and cryptography challenges against the clock.",
+          placard: ['1st', 'place, statewide capture-the-flag'],
+          facts: [['Format', 'Capture-the-flag, team'], ['Also', 'CompTIA Security+ certified']],
+          tags: ['Linux', 'Cryptography', 'Teamwork'],
+        },
+      ],
     },
   ],
 
-  projects: [
-    {
-      name: 'SPINA',
-      kind: 'Startup',
-      status: 'Live',
-      summary: "A peer-to-peer platform where players wager on their own skill. As a founding developer I took the app to iOS through TestFlight, integrated the web app with Whop, and moved payments from Coinflow to Whop's native payments.",
-      facts: ['55,000+ games played in 2026', '$190K+ wagered in 2026', '5,200+ new users in 2026'],
-      tags: ['Expo', 'Node.js', 'Solana', 'Whop'],
-    },
-    {
-      name: 'CyberQuest',
-      kind: 'Lockheed Martin · April 2025',
-      status: '1st place',
-      summary: "Lockheed Martin's statewide capture-the-flag competition, held in Marietta, Georgia. Our team took first place, working through Linux and cryptography challenges against the clock.",
-      facts: ['1st place statewide', 'Capture-the-flag format'],
-      tags: ['Linux', 'Cryptography', 'Teamwork'],
-    },
-    {
-      name: 'Crib Quest',
-      kind: 'Open-source game · Nov 2026',
-      status: 'Live',
-      summary: "A pixel-art browser game that teaches new machinists in the SSRL shop to run our Tormach 1100M CNC mill: hold the part, pick the bit for each metal, work out speeds and feeds, and react when a cut goes wrong.",
-      facts: ['7 levels, 82 steps', '132 glossary terms', 'MIT licensed'],
-      tags: ['JavaScript', 'Canvas', 'Pixel art'],
-      link: 'TormachQuest/',
-    },
-  ],
+  // The guided tour. Stops play in this order; the map in the hero is drawn from this list.
+  tour: {
+    button: 'Take the tour',
+    note: 'about a minute',
+    stops: [
+      { target: 'w-fuel', name: 'Fuel dashboard',
+        say: 'This one is in production at RaceTrac. The fuel team uses it to watch 14,186 pumps across 780 sites.' },
+      { target: ['w-jarvis', 'w-spend'], name: 'Two live demos',
+        say: 'These two run right here on sample data. JARVIS is a voice assistant prototype, and the spend dashboard found $198K left on expired purchase orders.',
+        links: [{ href: 'apps/jarvis.html', label: 'Open JARVIS', newTab: true }, { href: 'apps/spend.html', label: 'Open the spend dashboard', newTab: true }] },
+      { target: 'w-anomaly', name: 'Anomaly model',
+        say: 'An anomaly detector for store sales. It caught all 14 anomalies I planted, with false alarms on 0.63% of normal days.',
+        links: [{ href: 'racetrac.html#lab', label: 'Try the detector' }] },
+      { target: 'work-rows', name: 'Five more',
+        say: 'Ten projects in ten weeks. The rest include a secret scanner for every repo, a rebuild of the paging system, and release automation.',
+        links: [{ href: 'racetrac.html', label: 'Read all ten case studies' }] },
+      { target: 'w-spina', name: 'SPINA',
+        say: "Outside of work I'm a founding developer at SPINA, a skill gaming startup. Players logged 55,000+ games on it in 2026." },
+      { target: 'w-crib', name: 'Crib Quest',
+        say: "I wrote this game to train new machinists on our shop's CNC mill. Seven levels, open source, and it plays in the browser.",
+        links: [{ href: 'TormachQuest/', label: 'Play Crib Quest' }] },
+      { target: 'w-cyberquest', name: 'CyberQuest',
+        say: "Security is where I started. Our team took first place at Lockheed Martin's statewide capture-the-flag, and I hold Security+." },
+      { target: 'story', name: 'The story',
+        say: 'How I got here: a pizza oven, 75+ tutoring students, a year at Georgia State, and now computer systems engineering at UGA.' },
+      { target: 'gallery', name: 'The kitchen',
+        say: 'I cook a lot, usually the complicated version. Every plate here came out of my kitchen.' },
+      { target: 'contact', name: 'Say hello',
+        say: "That's the lap. If any of it looked useful to your team, my email and LinkedIn are right here." },
+    ],
+  },
 
   kitchen: {
     intro: 'I spent two and a half years as a pizzaiolo at Antico Pizza Napoletana, a Michelin Guide restaurant. At home I cook a lot, usually the complicated version. Everything here came out of my kitchen.',
@@ -650,8 +879,6 @@ window.SITE = {
   $('place').textContent = S.place;
   $('school').textContent = S.school;
   $('intro').textContent = S.intro;
-  var items = S.stack.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
-  $('marquee').innerHTML = '<ul>' + items + '</ul><ul aria-hidden="true">' + items + '</ul>';
 
   $('stats').innerHTML = S.numbers.map(function (n) {
     return '<div class="stat"><b data-to="' + n.value + '" data-pre="' + esc(n.prefix || '') + '" data-suf="' + esc(n.suffix || '') + '">' + esc(n.prefix || '') + n.value.toLocaleString('en-US') + esc(n.suffix || '') + '</b><span>' + esc(n.label) + '</span></div>';
@@ -666,27 +893,45 @@ window.SITE = {
     tl.appendChild(li);
   });
 
-  $('work-list').innerHTML = S.work.map(function (w) {
-    var cols = [[], [], [], []];
-    (w.thumbs || []).forEach(function (src, i) { cols[i % 4].push('<img src="' + esc(src) + '" alt="" loading="lazy">'); });
-    var mosaic = w.thumbs && w.thumbs.length
-      ? '<div class="mosaic" aria-hidden="true"><div class="grid">' + cols.map(function (c) { return '<div class="col">' + c.join('') + c.join('') + '</div>'; }).join('') + '</div><span class="badge"><i></i>' + w.thumbs.length + ' projects · 2 live demos</span></div>'
-      : '';
-    var tag = w.page ? 'a' : 'div';
-    return '<' + tag + ' class="work-card tilt reveal"' + (w.page ? ' href="' + esc(w.page) + '"' : '') + '>' +
-      '<div class="txt"><p class="org">' + esc(w.org) + '</p><div class="meta"><b>' + esc(w.role) + '</b> · ' + esc(w.when) + '</div>' +
-      '<p class="sum">' + esc(w.summary) + '</p><ul class="tags">' + (w.tags || []).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
-      (w.page ? '<span class="go">Read the case studies <span class="arr">→</span></span>' : '') + '</div>' + mosaic + '</' + tag + '>';
+  // ---------- work and projects ----------
+  function linkAttrs(l) { return ' href="' + esc(l.href) + '"' + (l.newTab ? ' target="_blank" rel="noopener"' : ''); }
+  function picture(it) {
+    var first = it.links && it.links[0], style = ' style="aspect-ratio: ' + esc(it.ratio || '1440 / 614') + '"';
+    if (it.img) {
+      var tag = first ? 'a' : 'div';
+      return '<' + tag + ' class="shot"' + style + (first ? linkAttrs(first) + ' tabindex="-1" aria-hidden="true"' : '') + '>' +
+        '<img src="' + esc(it.img) + '" alt="' + esc(first ? '' : it.alt || '') + '" loading="lazy" decoding="async"' + (it.pixel ? ' class="px"' : '') + '>' +
+        (it.live ? '<span class="live"><i></i>Live demo</span>' : '') + '</' + tag + '>';
+    }
+    if (it.numbers) return '<dl class="shot panel nums">' + it.numbers.map(function (n) { return '<div><dd>' + esc(n[0]) + '</dd><dt>' + esc(n[1]) + '</dt></div>'; }).join('') + '</dl>';
+    if (it.placard) return '<p class="shot panel placard"' + style + '><b>' + esc(it.placard[0]) + '</b><span>' + esc(it.placard[1]) + '</span></p>';
+    return '';
+  }
+  function item(it) {
+    if (it.size === 'row') {
+      var l = it.links[0];
+      return '<li id="w-' + esc(it.id) + '"><a class="row"' + linkAttrs(l) + '><img src="' + esc(it.img) + '" alt="" loading="lazy" decoding="async">' +
+        '<span class="rn">' + esc(it.name) + '<small>' + esc(it.area) + '</small></span><span class="rs">' + esc(it.summary) + '</span><span class="rg" aria-hidden="true">' + esc(l.label) + '</span></a></li>';
+    }
+    return '<article class="item ' + (it.size === 'lead' ? 'lead' : 'half') + (it.flip ? ' flip' : '') + '" id="w-' + esc(it.id) + '">' + picture(it) +
+      '<div class="txt"><p class="area">' + esc(it.area) + '</p><h3>' + esc(it.name) + '</h3><p class="sum">' + esc(it.summary) + '</p>' +
+      (it.facts && it.facts.length ? '<dl class="facts">' + it.facts.map(function (f) { return '<div><dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
+      (it.tags && it.tags.length ? '<ul class="tags" aria-label="Built with">' + it.tags.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '') +
+      (it.links && it.links.length ? '<p class="acts">' + it.links.map(function (l, i) { return '<a' + (i === 0 ? ' class="main"' : '') + linkAttrs(l) + '>' + esc(l.label) + '</a>'; }).join('') + '</p>' : '') +
+      '</div></article>';
+  }
+  $('groups').innerHTML = S.groups.map(function (g) {
+    // consecutive 'row' items are gathered into one list
+    var out = '', rows = [];
+    function flush() { if (rows.length) { out += '<ul class="rows" id="' + esc(g.id) + '-rows">' + rows.join('') + '</ul>'; rows = []; } }
+    g.items.forEach(function (it) { if (it.size === 'row') rows.push(item(it)); else { flush(); out += item(it); } });
+    flush();
+    return '<section class="band gutter" id="' + esc(g.id) + '"><div class="wrap"><div class="band-head"><h2 class="h2">' + esc(g.title) + '</h2>' +
+      (g.intro ? '<p class="lede">' + esc(g.intro) + '</p>' : '') +
+      (g.more ? '<a class="more" href="' + esc(g.more.href) + '">' + esc(g.more.label) + '</a>' : '') +
+      '</div><div class="items">' + out + '</div></div></section>';
   }).join('');
-
-  $('proj-list').innerHTML = S.projects.map(function (p) {
-    var live = /live/i.test(p.status);
-    var inner = '<span class="glow" aria-hidden="true"></span><div class="top"><span class="kind">' + esc(p.kind) + '</span><span class="status' + (live ? ' live' : '') + '">' + esc(p.status) + '</span></div>' +
-      '<h3>' + esc(p.name) + '</h3><p>' + esc(p.summary) + '</p>' +
-      (p.facts && p.facts.length ? '<div class="facts">' + p.facts.map(function (f) { return '<span>' + esc(f) + '</span>'; }).join('') + '</div>' : '') +
-      (p.tags && p.tags.length ? '<ul class="tags">' + p.tags.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '');
-    return p.link ? '<a class="proj tilt reveal" href="' + esc(p.link) + '" style="text-decoration:none;color:inherit">' + inner + '</a>' : '<article class="proj tilt reveal">' + inner + '</article>';
-  }).join('');
+  $('stack').textContent = S.stack.join(', ');
 
   var K = S.kitchen;
   $('kitchen-intro').textContent = K.intro;
@@ -1179,19 +1424,203 @@ window.SITE = {
     document.querySelectorAll('.stat b').forEach(function (b) { io.observe(b); });
   })();
 
-  // ---------- tilt + glow on cards ----------
-  if (finePointer && !reduce) {
-    document.querySelectorAll('.tilt').forEach(function (card) {
-      card.addEventListener('pointermove', function (e) {
-        var r = card.getBoundingClientRect(), px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
-        card.style.setProperty('--ry', (px * 5).toFixed(2) + 'deg');
-        card.style.setProperty('--rx', (-py * 5).toFixed(2) + 'deg');
-        card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-        card.style.setProperty('--my', (e.clientY - r.top) + 'px');
-      });
-      card.addEventListener('pointerleave', function () { card.style.setProperty('--rx', '0deg'); card.style.setProperty('--ry', '0deg'); card.style.setProperty('--mx', '-999px'); });
-    });
+  // ---------- the tour map ----------
+  // One circuit, drawn twice: large in the hero with a labelled turn per stop, small in the tour card.
+  // The outline is made up; it is not a real track.
+  var NS = 'http://www.w3.org/2000/svg';
+  var CIRCUIT = [[181, 353], [332, 358], [450, 344], [496, 284], [452, 223], [488, 161], [472, 87], [385, 62], [313, 100], [328, 167], [260, 199], [212, 141], [157, 73], [109, 123], [128, 212], [100, 300], [126, 347]];
+  function svgEl(name, attrs, parent) {
+    var el = document.createElementNS(NS, name);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
   }
+  function drawTrack(svg) {
+    var n = CIRCUIT.length, d = 'M' + CIRCUIT[0].join(','), area = 0;
+    for (var i = 0; i < n; i++) {
+      var p0 = CIRCUIT[(i - 1 + n) % n], p1 = CIRCUIT[i], p2 = CIRCUIT[(i + 1) % n], p3 = CIRCUIT[(i + 2) % n];
+      d += 'C' + [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6, p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6, p2[0], p2[1]].map(function (v) { return v.toFixed(1); }).join(',');
+      area += p1[0] * p2[1] - p2[0] * p1[1];
+    }
+    d += 'Z';
+    svgEl('path', { 'class': 'road', d: d }, svg);
+    var lane = svgEl('path', { 'class': 'lane', d: d }, svg);
+    svgEl('path', { 'class': 'mid', d: d }, svg);
+    var len = lane.getTotalLength(), side = area > 0 ? 1 : -1;
+    // f is how far round the lap, 0 to 1. Returns the point and the unit normal pointing off the outside of the track.
+    function at(f) {
+      var s = ((f % 1) + 1) % 1 * len, p = lane.getPointAtLength(s), a = lane.getPointAtLength((s + len - 1) % len), b = lane.getPointAtLength((s + 1) % len);
+      var tx = b.x - a.x, ty = b.y - a.y, m = Math.hypot(tx, ty) || 1;
+      return { x: p.x, y: p.y, nx: side * ty / m, ny: -side * tx / m };
+    }
+    var turns = svgEl('g', {}, svg);
+    var car = svgEl('g', {}, svg);
+    svgEl('circle', { 'class': 'halo', r: 12 }, car); svgEl('circle', { 'class': 'car', r: 5.5 }, car);
+    function place(f) { var p = at(f); car.setAttribute('transform', 'translate(' + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ')'); }
+    place(0);
+    return { at: at, turns: turns, place: place, car: car };
+  }
+  var STOPS = S.tour.stops, NSTOP = STOPS.length;
+  function stopF(i) { return (i + 1) / NSTOP; }          // the last stop sits on the start/finish line
+
+  var heroTrack = drawTrack($('lap-map'));
+  STOPS.forEach(function (s, i) {
+    var p = heroTrack.at(stopF(i)), first = [].concat(s.target)[0];
+    var a = svgEl('a', { 'class': 'turn' + (i === NSTOP - 1 ? ' end' : ''), href: '#' + first, 'data-stop': i, 'aria-label': 'Stop ' + (i + 1) + ': ' + s.name + '. Start the tour here.' }, heroTrack.turns);
+    svgEl('circle', { cx: p.x.toFixed(1), cy: p.y.toFixed(1), r: 13 }, a);
+    svgEl('text', { 'class': 'n', x: p.x.toFixed(1), y: p.y.toFixed(1) }, a).textContent = i + 1;
+    // the label sits off the outside of the track, aligned by which way that is
+    var side = Math.abs(p.nx) < 0.38, lx = p.x + p.nx * (side ? 20 : 24), ly = p.y + p.ny * (side ? 29 : 18);
+    var t = svgEl('text', { 'class': 'l', x: lx.toFixed(1), y: ly.toFixed(1), 'text-anchor': side ? 'middle' : p.nx > 0 ? 'start' : 'end', 'dominant-baseline': 'central' }, a);
+    t.textContent = s.name;
+    // an invisible box behind the number and its label, so the gap between them is clickable too
+    var tw = s.name.length * 8.1 + 6, anchor = side ? 'middle' : p.nx > 0 ? 'start' : 'end';
+    var tx0 = anchor === 'middle' ? lx - tw / 2 : anchor === 'start' ? lx : lx - tw;
+    var x0 = Math.min(p.x - 15, tx0), x1 = Math.max(p.x + 15, tx0 + tw), y0 = Math.min(p.y - 15, ly - 11), y1 = Math.max(p.y + 15, ly + 11);
+    a.insertBefore(svgEl('rect', { x: x0.toFixed(1), y: y0.toFixed(1), width: (x1 - x0).toFixed(1), height: (y1 - y0).toFixed(1), fill: 'transparent' }), a.firstChild);
+  });
+  // the marker idles round the hero map until the tour borrows it
+  (function () {
+    if (reduce) return;
+    var f = 0, last = 0, raf = 0, hero = $('top');
+    function step(now) { if (last) f = (f + (now - last) / 52000) % 1; last = now; heroTrack.place(f); raf = requestAnimationFrame(step); }
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { cancelAnimationFrame(raf); last = 0; if (es[0].isIntersecting) raf = requestAnimationFrame(step); }).observe(hero);
+    else raf = requestAnimationFrame(step);
+  })();
+
+  // ---------- guided tour ----------
+  (function () {
+    var dock = $('tour'), ring = $('tour-ring'), nav = $('nav');
+    var bBack = $('tour-back'), bPlay = $('tour-play'), bNext = $('tour-next'), prog = $('tour-prog'), clock = $('tour-time');
+    var mini = drawTrack($('tour-map')), dots = STOPS.map(function (_, i) {
+      var p = mini.at(stopF(i)); return svgEl('circle', { 'class': 'dot', cx: p.x.toFixed(1), cy: p.y.toFixed(1), r: 9 }, mini.turns);
+    });
+    mini.car.querySelector('.halo').setAttribute('r', 26); mini.car.querySelector('.car').setAttribute('r', 13);
+
+    var on = false, at = -1, playing = false, opener = null, raf = 0, last = 0;
+    var carF = 0, carFrom = 0, carTo = 0, moveT = 0, MOVE = 900;   // marker travel between turns
+    var dwell = 0, dwellT = 0, lapMs = 0, box = null;              // box: the ring's current rectangle
+    $('tour-cta').textContent = S.tour.button; $('tour-cta-note').textContent = S.tour.note;
+    if (reduce) { bPlay.hidden = true; clock.hidden = true; }
+
+    // a stop that names a whole section points at its content column, not the full-width band
+    function targets(i) {
+      return [].concat(STOPS[i].target).map(function (id) {
+        var el = document.getElementById(id);
+        return el && el.matches('section') && el.querySelector('.wrap') || el;
+      }).filter(Boolean);
+    }
+    function rectOf(els) {
+      var r = null;
+      els.forEach(function (el) { var b = el.getBoundingClientRect(); r = r ? { l: Math.min(r.l, b.left), t: Math.min(r.t, b.top), r: Math.max(r.r, b.right), b: Math.max(r.b, b.bottom) } : { l: b.left, t: b.top, r: b.right, b: b.bottom }; });
+      return r;
+    }
+    // the part of the window not covered by the nav or the tour card
+    function zone() { return { t: nav.getBoundingClientRect().bottom + 12, b: dock.getBoundingClientRect().top - 12 }; }
+    function fmt(ms) { var s = ms / 1000; return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60).toFixed(1); }
+
+    function show(i, dir) {
+      var s = STOPS[i], lastStop = i === NSTOP - 1;
+      at = i;
+      $('tour-count').textContent = 'Stop ' + (i + 1) + ' of ' + NSTOP;
+      $('tour-name').textContent = s.name;
+      $('tour-say').textContent = s.say;
+      $('tour-links').innerHTML = (s.links || []).map(function (l) { return '<a' + linkAttrs(l) + '>' + esc(l.label) + '</a>'; }).join('');
+      bBack.disabled = i === 0;
+      bNext.textContent = lastStop ? 'Run it again' : 'Next';
+      bPlay.hidden = reduce || lastStop;
+      if (lastStop) setPlaying(false);
+      dots.forEach(function (d, k) { d.setAttribute('class', 'dot' + (k < i ? ' done' : k === i ? ' now' : '')); });
+      document.body.style.setProperty('--tour-h', dock.offsetHeight + 24 + 'px');
+
+      // marker: forward round the lap, or back the way it came
+      carFrom = dir < 0 ? stopF(i + 1) : i === 0 ? 0 : stopF(i - 1); carTo = stopF(i); moveT = 0;
+      dwell = 1800 + s.say.split(/\s+/).length * 220; dwellT = 0;
+
+      var els = targets(i); if (!els.length) return;
+      var r = rectOf(els), z = zone(), room = z.b - z.t, h = r.b - r.t;
+      var dy = h + 28 <= room ? r.t - z.t - (room - h) / 2 : r.t - z.t - 14;
+      window.scrollTo({ top: Math.max(0, window.scrollY + dy), behavior: reduce ? 'auto' : 'smooth' });
+    }
+    function setPlaying(p) { playing = p && !reduce; bPlay.textContent = playing ? 'Pause' : 'Play'; }
+    function next() { if (at >= NSTOP - 1) { lapMs = 0; carF = 0; setPlaying(true); show(0, 1); } else show(at + 1, 1); }
+    function back() { if (at > 0) show(at - 1, -1); }
+
+    function frame(now) {
+      if (!on) return;
+      var dt = last ? Math.min(60, now - last) : 16; last = now;
+      // marker
+      if (moveT < MOVE) { moveT += dt; var k = reduce ? 1 : Math.min(1, moveT / MOVE); k = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; carF = carFrom + (carTo - carFrom) * k; if (reduce) moveT = MOVE; }
+      else if (playing) { dwellT += dt; if (dwellT >= dwell) next(); }
+      mini.place(carF);
+      if (playing && at < NSTOP - 1) lapMs += dt;
+      clock.textContent = fmt(lapMs);
+      prog.style.setProperty('--k', (at === NSTOP - 1 ? 1 : Math.min(1, dwellT / dwell)).toFixed(3));
+      // spotlight ring follows the target, kept clear of the nav and the card
+      var els = targets(at), r = els.length && rectOf(els);
+      if (r) {
+        var z = zone(), pad = 12;
+        var want = { l: Math.max(6, r.l - pad), t: Math.max(z.t, r.t - pad), r: Math.min(innerWidth - 6, r.r + pad), b: Math.min(z.b, r.b + pad) };
+        var e = reduce || !box ? 1 : 0.22;
+        box = box || want;
+        box = { l: box.l + (want.l - box.l) * e, t: box.t + (want.t - box.t) * e, r: box.r + (want.r - box.r) * e, b: box.b + (want.b - box.b) * e };
+        var w = box.r - box.l, h = box.b - box.t;
+        ring.classList.toggle('off', h < 48 || w < 48);
+        ring.style.transform = 'translate(' + box.l.toFixed(1) + 'px,' + box.t.toFixed(1) + 'px)';
+        ring.style.width = Math.max(0, w).toFixed(1) + 'px'; ring.style.height = Math.max(0, h).toFixed(1) + 'px';
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    function start(i, from) {
+      opener = from || null;
+      if (nav.classList.contains('open')) { nav.classList.remove('open'); nav.querySelector('.menu-btn').setAttribute('aria-expanded', 'false'); }
+      dock.hidden = false; ring.hidden = false; document.body.classList.add('touring');
+      on = true; lapMs = 0; carF = 0; box = null; last = 0;
+      setPlaying(true); show(i || 0, 1);
+      dock.focus({ preventScroll: true });
+      cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
+    }
+    function stop() {
+      if (!on) return;
+      on = false; cancelAnimationFrame(raf);
+      dock.hidden = true; ring.hidden = true; ring.classList.add('off'); document.body.classList.remove('touring');
+      if (opener && opener.isConnected && opener.getClientRects().length) opener.focus({ preventScroll: true });
+    }
+
+    bNext.addEventListener('click', next);
+    bBack.addEventListener('click', back);
+    bPlay.addEventListener('click', function () { setPlaying(!playing); });
+    $('tour-close').addEventListener('click', stop);
+    $('tour-links').addEventListener('click', function () { setPlaying(false); });
+    document.addEventListener('click', function (e) {
+      var go = e.target.closest('[data-tour-start]'), turn = e.target.closest('.turn[data-stop]');
+      if (go) { e.preventDefault(); start(0, go); }
+      else if (turn) { e.preventDefault(); start(+turn.getAttribute('data-stop'), turn); }
+      else if (on && playing && !dock.contains(e.target)) setPlaying(false);   // clicked something on the page: let them look
+    });
+    document.addEventListener('keydown', function (e) {
+      if (!on || $('lb').open || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.key === 'Escape') stop();
+      else if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); back(); }
+      else if (/^(ArrowUp|ArrowDown|PageUp|PageDown|Home|End| )$/.test(e.key) && !e.target.closest('button, a')) setPlaying(false);
+    });
+    // scrolling by hand means the visitor wants to look around: stop auto-advancing, keep the card open
+    ['wheel', 'touchmove'].forEach(function (ev) {
+      window.addEventListener(ev, function (e) { if (on && playing && !dock.contains(e.target)) setPlaying(false); }, { passive: true });
+    });
+    $('lb').addEventListener('toggle', function () { if (on) setPlaying(false); });
+    window.addEventListener('resize', function () { if (on) document.body.style.setProperty('--tour-h', dock.offsetHeight + 24 + 'px'); });
+
+    // lucasdemacedo.dev/#tour starts the tour on arrival
+    function fromHash() {
+      if (location.hash !== '#tour') return;
+      history.replaceState(null, '', location.pathname + location.search);
+      setTimeout(function () { start(0); }, reduce ? 0 : 900);
+    }
+    window.addEventListener('hashchange', fromHash); fromHash();
+  })();
 })();
 </script>
 

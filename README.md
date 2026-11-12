@@ -4,7 +4,9 @@ Personal site of Lucas de Macedo. Plain static files, no build step.
 
 Everything that gets published lives in `public/`:
 
-- `public/index.html`: home page (story, work, side projects, kitchen)
+- `public/index.html`: home page (work, side projects, story, kitchen) and the guided tour. All of its text, the project
+  list and the tour stops live in the `window.SITE` object near the bottom of the file; the comment above it says how to add things.
+  `lucasdemacedo.dev/#tour` opens the page with the tour already running.
 - `public/racetrac.html`: RaceTrac summer 2026 case studies
 - `public/TormachQuest/`: Crib Quest, a pixel-art Tormach 1100M training game (source: github.com/lucasdemacedo1/tormach-quest)
 - `public/apps/`: offline demos of JARVIS and the Remaining Spend dashboard (sample data, no API calls)

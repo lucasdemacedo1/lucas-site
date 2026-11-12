@@ -87,7 +87,7 @@
 .site-nav.open .menu-btn .ico::before { transform: translateY(5px) rotate(45deg); }
 .site-nav.open .menu-btn .ico::after { transform: translateY(-5px) rotate(-45deg); }
 .site-nav.on-night .menu-btn { background: rgba(18,24,33,.6); border-color: var(--night-rule); color: var(--night-ink); }
-@media (max-width: 640px) {
+@media (max-width: 820px) {
   .site-nav .menu-btn { display: inline-flex; }
   .site-nav ul {
     display: none; position: absolute; top: 100%; left: 0; right: 0; margin: 0; flex-direction: column; gap: 0;
@@ -101,6 +101,17 @@
 }
 @keyframes menu-in { from { opacity: 0; transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .site-nav.open ul { animation: none; } }
+
+/* the tour entry in the nav reads as a button */
+.site-nav li a.tour-link { display: inline-flex; align-items: center; gap: 8px; margin-left: 8px; padding-inline: 12px; font-weight: 600; background: var(--accent); color: var(--on-accent); }
+.site-nav li a.tour-link:hover { background: var(--accent); color: var(--on-accent); filter: brightness(1.12); }
+.site-nav.on-night li a.tour-link, .site-nav.on-night li a.tour-link:hover { background: var(--night-accent); color: var(--night); }
+.play { display: inline-block; width: 0; height: 0; border-left: 8px solid currentColor; border-block: 5px solid transparent; flex-shrink: 0; }
+/* seven links need more room than five: the Menu button takes over a little earlier, and one link steps aside in between */
+@media (min-width: 821px) and (max-width: 1040px) { .site-nav li.opt { display: none; } }
+@media (max-width: 820px) {
+  .site-nav li a.tour-link { display: flex; margin: 10px 0 0; justify-content: center; border-radius: 8px; border-top: 0; }
+}
 
 .site-foot {
   border-top: 1px solid var(--rule); margin-top: 32px;
@@ -446,11 +457,13 @@ footer { border-top: 1px solid var(--rule); padding-block: 28px 48px; font-famil
     <a class="mark" href="index.html"><b>LdM</b><span>Lucas de Macedo</span></a>
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-links"><span class="ico" aria-hidden="true"></span>Menu</button>
     <ul id="site-links">
-      <li><a href="index.html#story">Story</a></li>
       <li><a href="index.html#work">Work</a></li>
       <li><a href="index.html#projects">Projects</a></li>
+      <li><a href="index.html#story">Story</a></li>
       <li><a href="index.html#kitchen">Kitchen</a></li>
-      <li><a href="racetrac.html" aria-current="page">RaceTrac case studies</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+      <li class="opt"><a href="racetrac.html" aria-current="page">RaceTrac case studies</a></li>
+      <li><a class="tour-link" href="index.html#tour"><span class="play" aria-hidden="true"></span>Take the tour</a></li>
     </ul>
   </div>
 </nav>
@@ -1396,7 +1409,7 @@ document.querySelectorAll('.embed-frame').forEach(function (box) {
   nav.addEventListener('click', function (e) { if (e.target.closest('ul a')) set(false); });
   document.addEventListener('click', function (e) { if (!nav.contains(e.target)) set(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && nav.classList.contains('open')) { set(false); btn.focus(); } });
-  window.addEventListener('resize', function () { if (innerWidth > 640) set(false); });
+  window.addEventListener('resize', function () { if (innerWidth > 820) set(false); });
 })();
 </script>
 <script>(function () {
